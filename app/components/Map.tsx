@@ -7,7 +7,7 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import VehicleMarker from './VehicleMarker';
 import { TransportVehicle } from '../types/transport';
-import { sampleVehicles, tokyoStations } from '../data/sampleData';
+import { sampleVehicles, fukuokaStations } from '../data/sampleData';
 
 // Fix for default markers in React-Leaflet
 delete (L.Icon.Default.prototype as L.Icon.Default & { _getIconUrl?: () => string })._getIconUrl;
@@ -42,7 +42,7 @@ interface MapProps {
 }
 
 export default function Map({
-  center = [35.6814, 139.7661], // 新宿駅をデフォルトに変更
+  center = [33.5904, 130.4017], // 博多駅をデフォルトに変更
   zoom = 12,
   className = "h-96 w-full"
 }: MapProps) {
@@ -98,7 +98,7 @@ export default function Map({
         />
 
         {/* 主要駅の表示 */}
-        {Object.entries(tokyoStations).map(([name, position]) => (
+        {Object.entries(fukuokaStations).map(([name, position]) => (
           <Marker
             key={name}
             position={[position.latitude, position.longitude]}

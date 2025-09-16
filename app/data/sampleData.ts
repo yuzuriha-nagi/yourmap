@@ -4,11 +4,11 @@ export const sampleVehicles: TransportVehicle[] = [
   {
     id: 'train_001',
     type: 'train',
-    line: 'JR山手線',
-    operator: 'JR東日本',
-    currentPosition: { latitude: 35.6814, longitude: 139.7661 }, // 新宿駅付近
-    destination: '品川',
-    nextStop: '代々木',
+    line: 'JR鹿児島本線',
+    operator: 'JR九州',
+    currentPosition: { latitude: 33.5904, longitude: 130.4017 }, // 博多駅付近
+    destination: '小倉',
+    nextStop: '吉塚',
     delay: 2,
     status: 'delayed',
     lastUpdated: new Date()
@@ -16,11 +16,11 @@ export const sampleVehicles: TransportVehicle[] = [
   {
     id: 'train_002',
     type: 'train',
-    line: 'JR山手線',
-    operator: 'JR東日本',
-    currentPosition: { latitude: 35.6751, longitude: 139.7040 }, // 渋谷駅付近
-    destination: '東京',
-    nextStop: '原宿',
+    line: 'JR鹿児島本線',
+    operator: 'JR九州',
+    currentPosition: { latitude: 33.5937, longitude: 130.3986 }, // 吉塚駅付近
+    destination: '博多',
+    nextStop: '箱崎',
     delay: 0,
     status: 'on_time',
     lastUpdated: new Date()
@@ -28,23 +28,23 @@ export const sampleVehicles: TransportVehicle[] = [
   {
     id: 'bus_001',
     type: 'bus',
-    line: '都バス01系統',
-    operator: '東京都交通局',
-    currentPosition: { latitude: 35.6895, longitude: 139.6917 }, // 新宿西口付近
-    destination: '銀座',
-    nextStop: '新宿三丁目',
-    delay: 5,
+    line: '西鉄バス100番',
+    operator: '西日本鉄道',
+    currentPosition: { latitude: 33.5886, longitude: 130.4017 }, // 天神付近
+    destination: '博多駅',
+    nextStop: '福岡市役所前',
+    delay: 3,
     status: 'delayed',
     lastUpdated: new Date()
   },
   {
     id: 'subway_001',
     type: 'subway',
-    line: '東京メトロ丸ノ内線',
-    operator: '東京メトロ',
-    currentPosition: { latitude: 35.6911, longitude: 139.7006 }, // 新宿三丁目駅付近
-    destination: '池袋',
-    nextStop: '新宿御苑前',
+    line: '福岡市地下鉄空港線',
+    operator: '福岡市交通局',
+    currentPosition: { latitude: 33.5904, longitude: 130.4138 }, // 博多駅付近
+    destination: '福岡空港',
+    nextStop: '東比恵',
     delay: 0,
     status: 'on_time',
     lastUpdated: new Date()
@@ -53,23 +53,23 @@ export const sampleVehicles: TransportVehicle[] = [
 
 export const sampleRoutes: TransportRoute[] = [
   {
-    id: 'yamanote_line',
-    name: 'JR山手線',
+    id: 'kagoshima_line',
+    name: 'JR鹿児島本線',
     type: 'train',
-    color: '#9ACD32',
+    color: '#007FFF',
     stops: [
-      { id: 'tokyo', name: '東京', position: { latitude: 35.6762, longitude: 139.6503 }, type: 'station' },
-      { id: 'shimbashi', name: '新橋', position: { latitude: 35.6666, longitude: 139.7587 }, type: 'station' },
-      { id: 'shibuya', name: '渋谷', position: { latitude: 35.6751, longitude: 139.7040 }, type: 'station' },
-      { id: 'shinjuku', name: '新宿', position: { latitude: 35.6814, longitude: 139.7661 }, type: 'station' },
-      { id: 'ikebukuro', name: '池袋', position: { latitude: 35.7295, longitude: 139.7109 }, type: 'station' }
+      { id: 'hakata', name: '博多', position: { latitude: 33.5904, longitude: 130.4017 }, type: 'station' },
+      { id: 'yoshizuka', name: '吉塚', position: { latitude: 33.5937, longitude: 130.3986 }, type: 'station' },
+      { id: 'hakozaki', name: '箱崎', position: { latitude: 33.5974, longitude: 130.3958 }, type: 'station' },
+      { id: 'kashii', name: '香椎', position: { latitude: 33.6123, longitude: 130.3889 }, type: 'station' },
+      { id: 'nishitobata', name: '西戸畑', position: { latitude: 33.8733, longitude: 130.8239 }, type: 'station' }
     ],
     path: [
-      { latitude: 35.6762, longitude: 139.6503 },
-      { latitude: 35.6666, longitude: 139.7587 },
-      { latitude: 35.6751, longitude: 139.7040 },
-      { latitude: 35.6814, longitude: 139.7661 },
-      { latitude: 35.7295, longitude: 139.7109 }
+      { latitude: 33.5904, longitude: 130.4017 },
+      { latitude: 33.5937, longitude: 130.3986 },
+      { latitude: 33.5974, longitude: 130.3958 },
+      { latitude: 33.6123, longitude: 130.3889 },
+      { latitude: 33.8733, longitude: 130.8239 }
     ]
   }
 ];
@@ -79,15 +79,15 @@ export const sampleDelays: DelayInfo[] = [
     vehicleId: 'train_001',
     delayMinutes: 2,
     reason: '乗客混雑のため',
-    affectedStops: ['新宿', '代々木', '原宿'],
+    affectedStops: ['博多', '吉塚', '箱崎'],
     estimatedResolution: new Date(Date.now() + 5 * 60 * 1000) // 5分後
   },
   {
     vehicleId: 'bus_001',
-    delayMinutes: 5,
+    delayMinutes: 3,
     reason: '交通渋滞のため',
-    affectedStops: ['新宿西口', '新宿三丁目'],
-    estimatedResolution: new Date(Date.now() + 10 * 60 * 1000) // 10分後
+    affectedStops: ['天神', '福岡市役所前'],
+    estimatedResolution: new Date(Date.now() + 8 * 60 * 1000) // 8分後
   }
 ];
 
@@ -98,13 +98,13 @@ export const sampleTrafficData: TrafficData = {
   lastFetch: new Date()
 };
 
-// 東京の主要駅座標
-export const tokyoStations = {
-  tokyo: { latitude: 35.6762, longitude: 139.6503 },
-  shimbashi: { latitude: 35.6666, longitude: 139.7587 },
-  shibuya: { latitude: 35.6751, longitude: 139.7040 },
-  shinjuku: { latitude: 35.6814, longitude: 139.7661 },
-  ikebukuro: { latitude: 35.7295, longitude: 139.7109 },
-  ueno: { latitude: 35.7137, longitude: 139.7767 },
-  akihabara: { latitude: 35.6984, longitude: 139.7730 }
+// 福岡の主要駅座標
+export const fukuokaStations = {
+  hakata: { latitude: 33.5904, longitude: 130.4017 },
+  tenjin: { latitude: 33.5886, longitude: 130.4017 },
+  yoshizuka: { latitude: 33.5937, longitude: 130.3986 },
+  hakozaki: { latitude: 33.5974, longitude: 130.3958 },
+  kashii: { latitude: 33.6123, longitude: 130.3889 },
+  nishijin: { latitude: 33.5755, longitude: 130.3669 },
+  fukuokakuko: { latitude: 33.5859, longitude: 130.4508 }
 };

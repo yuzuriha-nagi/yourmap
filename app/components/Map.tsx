@@ -7,7 +7,8 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import VehicleMarker from './VehicleMarker';
 import { TransportVehicle } from '../types/transport';
-import { sampleVehicles, fukuokaStations } from '../data/sampleData';
+import { fukuokaStations } from '../data/sampleData';
+import { transportApiService } from '../services/transportApi';
 
 // Fix for default markers in React-Leaflet
 delete (L.Icon.Default.prototype as L.Icon.Default & { _getIconUrl?: () => string })._getIconUrl;
@@ -46,45 +47,56 @@ export default function Map({
   zoom = 12,
   className = "h-96 w-full"
 }: MapProps) {
-  const [vehicles, setVehicles] = useState<TransportVehicle[]>(sampleVehicles);
+  const [vehicles, setVehicles] = useState<TransportVehicle[]>([]);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // リアルタイム更新のシミュレーション
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setVehicles(prevVehicles =>
-        prevVehicles.map(vehicle => {
-          // ランダムな小さな位置変更でシミュレーション
-          const latOffset = (Math.random() - 0.5) * 0.001;
-          const lngOffset = (Math.random() - 0.5) * 0.001;
-
-          // 遅延をランダムに変更
-          const delayChange = Math.random() > 0.8 ? Math.floor(Math.random() * 3) - 1 : 0;
-          const newDelay = Math.max(0, vehicle.delay + delayChange);
-
-          return {
-            ...vehicle,
-            currentPosition: {
-              latitude: vehicle.currentPosition.latitude + latOffset,
-              longitude: vehicle.currentPosition.longitude + lngOffset
-            },
-            delay: newDelay,
-            status: newDelay > 0 ? 'delayed' : 'on_time',
-            lastUpdated: new Date()
-          };
-        })
-      );
+  // 車両位置データを取得
+  const fetchVehicleData = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const vehicleData = await transportApiService.getEstimatedVehiclePositions();
+      setVehicles(vehicleData);
       setLastUpdate(new Date());
-    }, 5000); // 5秒ごとに更新
+    } catch (err) {
+      setError('車両位置データの取得に失敗しました');
+      console.error('Failed to fetch vehicle data:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  // 初回データ取得
+  useEffect(() => {
+    fetchVehicleData();
+  }, []);
+
+  // リアルタイム更新
+  useEffect(() => {
+    const interval = setInterval(fetchVehicleData, 30000); // 30秒ごとに更新
     return () => clearInterval(interval);
   }, []);
 
   return (
     <div className={className}>
-      <div className="mb-2 text-xs text-gray-500">
-        最終更新: {lastUpdate.toLocaleTimeString('ja-JP')}
-        <span className="ml-2 inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+      <div className="mb-2 flex items-center justify-between text-xs text-gray-500">
+        <div>
+          最終更新: {lastUpdate.toLocaleTimeString('ja-JP')}
+          {isLoading ? (
+            <span className="ml-2 inline-block w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></span>
+          ) : error ? (
+            <span className="ml-2 inline-block w-2 h-2 bg-red-500 rounded-full"></span>
+          ) : (
+            <span className="ml-2 inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+          )}
+        </div>
+        {error && (
+          <div className="text-red-500 text-xs">
+            {error}
+          </div>
+        )}
       </div>
       <MapContainer
         center={center}

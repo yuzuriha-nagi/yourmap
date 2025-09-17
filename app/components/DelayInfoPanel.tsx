@@ -2,42 +2,42 @@
 
 import { useEffect, useState } from 'react';
 import { TransportVehicle, DelayInfo } from '../types/transport';
-import { sampleVehicles, sampleDelays } from '../data/sampleData';
+import { transportApiService } from '../services/transportApi';
 
 interface DelayInfoPanelProps {
   className?: string;
 }
 
 export default function DelayInfoPanel({ className = "" }: DelayInfoPanelProps) {
-  const [vehicles, setVehicles] = useState<TransportVehicle[]>(sampleVehicles);
-  const [delays, setDelays] = useState<DelayInfo[]>(sampleDelays);
+  const [vehicles, setVehicles] = useState<TransportVehicle[]>([]);
+  const [delays, setDelays] = useState<DelayInfo[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  // データを取得する関数
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
+      const [vehicleData, delayData] = await Promise.all([
+        transportApiService.getEstimatedVehiclePositions(),
+        transportApiService.getDelayInfo()
+      ]);
+      setVehicles(vehicleData);
+      setDelays(delayData);
+    } catch (error) {
+      console.error('Failed to fetch data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 初回データ取得
   useEffect(() => {
-    const interval = setInterval(() => {
-      // 車両データの更新（Mapコンポーネントと同期）
-      setVehicles(prevVehicles =>
-        prevVehicles.map(vehicle => {
-          const delayChange = Math.random() > 0.8 ? Math.floor(Math.random() * 3) - 1 : 0;
-          const newDelay = Math.max(0, vehicle.delay + delayChange);
+    fetchData();
+  }, []);
 
-          return {
-            ...vehicle,
-            delay: newDelay,
-            status: newDelay > 0 ? 'delayed' : 'on_time',
-            lastUpdated: new Date()
-          };
-        })
-      );
-
-      // 遅延情報の更新
-      setDelays(prevDelays =>
-        prevDelays.map(delay => ({
-          ...delay,
-          delayMinutes: Math.max(0, delay.delayMinutes + Math.floor(Math.random() * 3) - 1)
-        })).filter(delay => delay.delayMinutes > 0)
-      );
-    }, 5000);
-
+  // 定期更新
+  useEffect(() => {
+    const interval = setInterval(fetchData, 30000); // 30秒ごとに更新
     return () => clearInterval(interval);
   }, []);
 

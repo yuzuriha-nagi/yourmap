@@ -11,7 +11,7 @@ interface DelayInfoPanelProps {
 export default function DelayInfoPanel({ className = "" }: DelayInfoPanelProps) {
   const [vehicles, setVehicles] = useState<TransportVehicle[]>([]);
   const [delays, setDelays] = useState<DelayInfo[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [, setIsLoading] = useState<boolean>(true);
 
   // データを取得する関数
   const fetchData = async () => {

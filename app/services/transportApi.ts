@@ -1,6 +1,6 @@
 'use client';
 
-import { TransportVehicle, DelayInfo, TransportRoute } from '../types/transport';
+import { TransportVehicle, DelayInfo } from '../types/transport';
 
 // API設定
 const API_CONFIG = {
@@ -249,14 +249,17 @@ class TransportApiService {
   /**
    * 運行情報データをパース
    */
-  private parseOperationInfo(data: any[]): RealTimeOperationInfo[] {
-    return data.map(item => ({
-      lineId: item['odpt:railway'] || item['odpt:busroute'] || '',
-      operatorId: item['odpt:operator'] || '',
-      delayMinutes: item['odpt:delayMinutes'] || 0,
-      status: this.parseOperationStatus(item['odpt:trainInformationStatus']),
-      informationText: item['odpt:trainInformationText'] || ''
-    }));
+  private parseOperationInfo(data: unknown[]): RealTimeOperationInfo[] {
+    return data.map(item => {
+      const apiItem = item as Record<string, unknown>;
+      return {
+        lineId: (apiItem['odpt:railway'] as string) || (apiItem['odpt:busroute'] as string) || '',
+        operatorId: (apiItem['odpt:operator'] as string) || '',
+        delayMinutes: (apiItem['odpt:delayMinutes'] as number) || 0,
+        status: this.parseOperationStatus(apiItem['odpt:trainInformationStatus'] as string),
+        informationText: (apiItem['odpt:trainInformationText'] as string) || ''
+      };
+    });
   }
 
   /**

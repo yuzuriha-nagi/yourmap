@@ -8,11 +8,6 @@ const API_CONFIG = {
   odpt: {
     baseUrl: 'https://api.odpt.org/api/v4',
     apiKey: process.env.NEXT_PUBLIC_ODPT_API_KEY || '',
-  },
-  // Google Transit API (将来用)
-  google: {
-    baseUrl: 'https://maps.googleapis.com/maps/api',
-    apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
   }
 };
 

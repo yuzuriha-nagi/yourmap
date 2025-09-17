@@ -34,7 +34,6 @@ jobs:
         run: npm run build
         env:
           NEXT_PUBLIC_ODPT_API_KEY: ${{ secrets.NEXT_PUBLIC_ODPT_API_KEY }}
-          NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${{ secrets.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }}
           NEXT_PUBLIC_USE_MOCK_DATA: ${{ secrets.NEXT_PUBLIC_USE_MOCK_DATA }}
 
   deploy_production:

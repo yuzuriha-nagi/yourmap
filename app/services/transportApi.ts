@@ -26,10 +26,10 @@ class TransportApiService {
    * 公共交通オープンデータ協議会からリアルタイム運行情報を取得
    */
   async getRealtimeOperationInfo(): Promise<RealTimeOperationInfo[]> {
-    // 開発モードまたはAPIキーがない場合はモックデータを使用
-    if (process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || !API_CONFIG.odpt.apiKey) {
-      console.info('Using mock data for development');
-      return this.getMockOperationInfo();
+    // APIキーがない場合はエラー
+    if (!API_CONFIG.odpt.apiKey) {
+      console.error('ODPT API key is not configured');
+      return [];
     }
 
     try {
@@ -76,9 +76,9 @@ class TransportApiService {
         }
       }
 
-      // エラー時はモックデータにフォールバック
-      console.info('Falling back to mock data due to API error');
-      return this.getMockOperationInfo();
+      // エラー時は空配列を返す
+      console.error('API error, returning empty data');
+      return [];
     }
   }
 
@@ -268,43 +268,6 @@ class TransportApiService {
     return 'normal';
   }
 
-  /**
-   * モック運行情報（APIキーがない場合）
-   */
-  private getMockOperationInfo(): RealTimeOperationInfo[] {
-    const now = new Date();
-    const hour = now.getHours();
-
-    // 時間帯による遅延確率の調整（ラッシュ時は遅延が多い）
-    const isRushHour = (hour >= 7 && hour <= 9) || (hour >= 17 && hour <= 19);
-    const delayProbability = isRushHour ? 0.3 : 0.1;
-
-    const mockData: RealTimeOperationInfo[] = [
-      {
-        lineId: 'jr_kagoshima',
-        operatorId: 'jr_kyushu',
-        delayMinutes: Math.random() < delayProbability ? Math.floor(Math.random() * 8) + 1 : 0,
-        status: Math.random() < delayProbability ? 'delay' : 'normal',
-        informationText: isRushHour && Math.random() < 0.2 ? '乗客混雑のため遅延' : undefined
-      },
-      {
-        lineId: 'fukuoka_subway_airport',
-        operatorId: 'fukuoka_city',
-        delayMinutes: Math.random() < (delayProbability * 0.5) ? Math.floor(Math.random() * 4) + 1 : 0,
-        status: Math.random() < (delayProbability * 0.5) ? 'delay' : 'normal',
-        informationText: Math.random() < 0.1 ? '信号調整のため遅延' : undefined
-      },
-      {
-        lineId: 'nishitetsu_bus',
-        operatorId: 'nishitetsu',
-        delayMinutes: Math.random() < (delayProbability * 1.5) ? Math.floor(Math.random() * 12) + 1 : 0,
-        status: Math.random() < (delayProbability * 1.5) ? 'delay' : 'normal',
-        informationText: isRushHour && Math.random() < 0.3 ? '交通渋滞のため遅延' : undefined
-      }
-    ];
-
-    return mockData;
-  }
 
   /**
    * 遅延情報を取得

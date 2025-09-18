@@ -1,28 +1,40 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { TransportVehicle, DelayInfo } from '../types/transport';
-import { transportApiService } from '../services/transportApi';
+import { Vehicle, VehicleResponse } from '../types/vehicle';
 
 interface DelayInfoPanelProps {
   className?: string;
 }
 
 export default function DelayInfoPanel({ className = "" }: DelayInfoPanelProps) {
-  const [vehicles, setVehicles] = useState<TransportVehicle[]>([]);
-  const [delays, setDelays] = useState<DelayInfo[]>([]);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [vehicleStats, setVehicleStats] = useState<{total: number, realTime: number, estimated: number}>({total: 0, realTime: 0, estimated: 0});
   const [, setIsLoading] = useState<boolean>(true);
 
   // データを取得する関数
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      const [vehicleData, delayData] = await Promise.all([
-        transportApiService.getEstimatedVehiclePositions(),
-        transportApiService.getDelayInfo()
-      ]);
-      setVehicles(vehicleData);
-      setDelays(delayData);
+      const response = await fetch('/api/vehicles');
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(errorData.error || `API request failed: ${response.status}`);
+      }
+
+      const vehicleData: VehicleResponse = await response.json();
+      // lastUpdatedをDate型に変換
+      const vehiclesWithDates = vehicleData.vehicles.map(vehicle => ({
+        ...vehicle,
+        lastUpdated: new Date(vehicle.lastUpdated)
+      }));
+      setVehicles(vehiclesWithDates);
+      setVehicleStats({
+        total: vehicleData.total,
+        realTime: vehicleData.realTime,
+        estimated: vehicleData.estimated
+      });
     } catch (error) {
       console.error('Failed to fetch data:', error);
     } finally {
@@ -53,11 +65,6 @@ export default function DelayInfoPanel({ className = "" }: DelayInfoPanelProps) 
     }
   };
 
-  const formatEstimatedTime = (date: Date) => {
-    const now = new Date();
-    const diffMinutes = Math.ceil((date.getTime() - now.getTime()) / (1000 * 60));
-    return diffMinutes > 0 ? `約${diffMinutes}分後` : '復旧済み';
-  };
 
   return (
     <div className={`space-y-6 ${className}`}>
@@ -80,59 +87,50 @@ export default function DelayInfoPanel({ className = "" }: DelayInfoPanelProps) 
             </div>
           ) : (
             <div className="space-y-3">
-              {delayedVehicles.map(vehicle => {
-                const relatedDelay = delays.find(d => d.vehicleId === vehicle.id);
-                return (
-                  <div
-                    key={vehicle.id}
-                    className="border border-amber-200 rounded-lg p-3 bg-amber-50 dark:bg-amber-900/20"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-lg">{getDelayIcon(vehicle.type)}</span>
-                        <div>
-                          <div className="font-medium text-gray-900 dark:text-white">
-                            {vehicle.line}
+              {delayedVehicles.map(vehicle => (
+                <div
+                  key={vehicle.id}
+                  className="border border-amber-200 rounded-lg p-3 bg-amber-50 dark:bg-amber-900/20"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-lg">{getDelayIcon(vehicle.type)}</span>
+                      <div>
+                        <div className="font-medium text-gray-900 dark:text-white">
+                          {vehicle.line}
+                        </div>
+                        <div className="text-sm text-gray-600 dark:text-gray-300">
+                          {vehicle.operator} → {vehicle.destination}
+                        </div>
+                        {vehicle.trainNumber && (
+                          <div className="text-xs text-gray-500">
+                            {vehicle.trainNumber} {vehicle.trainType}
                           </div>
-                          <div className="text-sm text-gray-600 dark:text-gray-300">
-                            {vehicle.operator} → {vehicle.destination}
+                        )}
+                        {vehicle.currentStation && (
+                          <div className="text-xs text-gray-500">
+                            現在: {vehicle.currentStation}
                           </div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-amber-600 font-semibold">
-                          {vehicle.delay}分遅延
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {vehicle.lastUpdated.toLocaleTimeString('ja-JP', {
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </div>
+                        )}
                       </div>
                     </div>
-                    {relatedDelay && (
-                      <div className="mt-2 pt-2 border-t border-amber-200">
-                        <div className="text-sm">
-                          <div className="text-gray-700 dark:text-gray-300">
-                            <strong>原因:</strong> {relatedDelay.reason}
-                          </div>
-                          {relatedDelay.estimatedResolution && (
-                            <div className="text-gray-600 dark:text-gray-400 mt-1">
-                              <strong>復旧予定:</strong> {formatEstimatedTime(relatedDelay.estimatedResolution)}
-                            </div>
-                          )}
-                          {relatedDelay.affectedStops.length > 0 && (
-                            <div className="text-gray-600 dark:text-gray-400 mt-1">
-                              <strong>影響区間:</strong> {relatedDelay.affectedStops.join(' - ')}
-                            </div>
-                          )}
-                        </div>
+                    <div className="text-right">
+                      <div className="text-amber-600 font-semibold">
+                        {vehicle.delay}分遅延
                       </div>
-                    )}
+                      <div className="text-xs text-gray-500">
+                        {vehicle.lastUpdated.toLocaleTimeString('ja-JP', {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </div>
+                      {vehicle.isEstimated && (
+                        <div className="text-xs text-blue-500">推定</div>
+                      )}
+                    </div>
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -167,7 +165,7 @@ export default function DelayInfoPanel({ className = "" }: DelayInfoPanelProps) 
 
           <div className="mt-4 space-y-2">
             <div className="text-sm text-gray-600 dark:text-gray-300">
-              <strong>追跡中の車両:</strong> {vehicles.length}台
+              <strong>追跡中の車両:</strong> {vehicleStats.total}台 (リアルタイム: {vehicleStats.realTime}, 推定: {vehicleStats.estimated})
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-300">
               <strong>平均遅延時間:</strong> {
@@ -175,6 +173,9 @@ export default function DelayInfoPanel({ className = "" }: DelayInfoPanelProps) 
                   ? Math.round(vehicles.reduce((sum, v) => sum + v.delay, 0) / vehicles.length * 10) / 10
                   : 0
               }分
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
+              <strong>運行路線:</strong> JR鹿児島本線、JR博多南線、地下鉄空港線、地下鉄箱崎線、地下鉄七隈線
             </div>
           </div>
         </div>

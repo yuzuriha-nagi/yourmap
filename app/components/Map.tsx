@@ -5,10 +5,9 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { LatLngExpression } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import { Station } from '../types/station';
+import { Vehicle, VehicleResponse } from '../types/vehicle';
 import VehicleMarker from './VehicleMarker';
-import { TransportVehicle } from '../types/transport';
-import { fukuokaStations } from '../data/sampleData';
-import { transportApiService } from '../services/transportApi';
 
 // Fix for default markers in React-Leaflet
 delete (L.Icon.Default.prototype as L.Icon.Default & { _getIconUrl?: () => string })._getIconUrl;
@@ -47,49 +46,93 @@ export default function Map({
   zoom = 12,
   className = "h-96 w-full"
 }: MapProps) {
-  const [vehicles, setVehicles] = useState<TransportVehicle[]>([]);
-  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+  const [stations, setStations] = useState<Station[]>([]);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [vehicleStats, setVehicleStats] = useState<{total: number, realTime: number, estimated: number}>({total: 0, realTime: 0, estimated: 0});
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // 車両位置データを取得
-  const fetchVehicleData = async () => {
+  // 駅データを取得
+  const fetchStations = async () => {
+    try {
+      const response = await fetch('/api/stations');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(errorData.error || `API request failed: ${response.status}`);
+      }
+      const stationData = await response.json();
+      setStations(stationData);
+    } catch (err) {
+      console.error('Failed to fetch station data:', err);
+    }
+  };
+
+  // 車両データを取得
+  const fetchVehicles = async () => {
     try {
       setIsLoading(true);
       setError(null);
-      const vehicleData = await transportApiService.getEstimatedVehiclePositions();
-      setVehicles(vehicleData);
-      setLastUpdate(new Date());
+      const response = await fetch('/api/vehicles');
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(errorData.error || `API request failed: ${response.status}`);
+      }
+
+      const vehicleData: VehicleResponse = await response.json();
+      // lastUpdatedをDate型に変換
+      const vehiclesWithDates = vehicleData.vehicles.map(vehicle => ({
+        ...vehicle,
+        lastUpdated: new Date(vehicle.lastUpdated)
+      }));
+      setVehicles(vehiclesWithDates);
+      setVehicleStats({
+        total: vehicleData.total,
+        realTime: vehicleData.realTime,
+        estimated: vehicleData.estimated
+      });
     } catch (err) {
-      setError('車両位置データの取得に失敗しました');
+      setError('車両データの取得に失敗しました');
       console.error('Failed to fetch vehicle data:', err);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // 駅名から座標を取得するヘルパー関数
+  const getStationPosition = (stationName: string): { latitude: number; longitude: number } | undefined => {
+    const station = stations.find(s =>
+      s.name.includes(stationName) ||
+      stationName.includes(s.name.replace(/駅$/, ''))
+    );
+    return station ? station.location : undefined;
+  };
+
   // 初回データ取得
   useEffect(() => {
-    fetchVehicleData();
+    fetchStations();
+    fetchVehicles();
   }, []);
 
-  // リアルタイム更新
+  // 定期更新（車両データのみ）
   useEffect(() => {
-    const interval = setInterval(fetchVehicleData, 30000); // 30秒ごとに更新
+    const interval = setInterval(fetchVehicles, 30000); // 30秒ごとに更新
     return () => clearInterval(interval);
   }, []);
 
   return (
     <div className={className}>
+      {/* ステータス表示 */}
       <div className="mb-2 flex items-center justify-between text-xs text-gray-500">
-        <div>
-          最終更新: {lastUpdate.toLocaleTimeString('ja-JP')}
+        <div className="flex space-x-4">
+          <span>駅: {stations.length}件</span>
+          <span>車両: {vehicleStats.total}台 (リアルタイム: {vehicleStats.realTime}, 推定: {vehicleStats.estimated})</span>
           {isLoading ? (
-            <span className="ml-2 inline-block w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></span>
+            <span className="inline-block w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></span>
           ) : error ? (
-            <span className="ml-2 inline-block w-2 h-2 bg-red-500 rounded-full"></span>
+            <span className="inline-block w-2 h-2 bg-red-500 rounded-full"></span>
           ) : (
-            <span className="ml-2 inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+            <span className="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
           )}
         </div>
         {error && (
@@ -98,6 +141,7 @@ export default function Map({
           </div>
         )}
       </div>
+
       <MapContainer
         center={center}
         zoom={zoom}
@@ -109,26 +153,47 @@ export default function Map({
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        {/* 主要駅の表示 */}
-        {Object.entries(fukuokaStations).map(([name, position]) => (
+        {/* API取得駅の表示 */}
+        {stations.map(station => (
           <Marker
-            key={name}
-            position={[position.latitude, position.longitude]}
+            key={station.id}
+            position={[station.location.latitude, station.location.longitude]}
             icon={stationIcon}
           >
             <Popup>
               <div className="text-center">
-                <div className="font-semibold">{name}</div>
-                <div className="text-xs text-gray-600">駅</div>
+                <div className="font-semibold">{station.name}</div>
+                {station.nameEn && (
+                  <div className="text-xs text-gray-500">{station.nameEn}</div>
+                )}
+                <div className="text-xs text-gray-600 mt-1">
+                  {station.operator.replace('odpt.Operator:', '')}
+                </div>
+                <div className="text-xs text-gray-500">
+                  {station.railway.replace('odpt.Railway:', '')}
+                </div>
+                {station.stationCode && (
+                  <div className="text-xs font-mono bg-gray-100 px-1 rounded mt-1">
+                    {station.stationCode}
+                  </div>
+                )}
               </div>
             </Popup>
           </Marker>
         ))}
 
-        {/* 交通車両の表示 */}
-        {vehicles.map(vehicle => (
-          <VehicleMarker key={vehicle.id} vehicle={vehicle} />
-        ))}
+        {/* 車両の表示 */}
+        {vehicles.map(vehicle => {
+          const stationPosition = vehicle.currentStation ? getStationPosition(vehicle.currentStation) : undefined;
+          return (
+            <VehicleMarker
+              key={vehicle.id}
+              vehicle={vehicle}
+              station={stationPosition}
+            />
+          );
+        })}
+
       </MapContainer>
     </div>
   );

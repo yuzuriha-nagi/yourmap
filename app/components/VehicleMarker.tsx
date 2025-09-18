@@ -2,7 +2,7 @@
 
 import { Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
-import { TransportVehicle } from '../types/transport';
+import { Vehicle } from '../types/vehicle';
 
 const createVehicleIcon = (type: string, status: string) => {
   const getIconColor = () => {
@@ -49,14 +49,16 @@ const createVehicleIcon = (type: string, status: string) => {
 };
 
 interface VehicleMarkerProps {
-  vehicle: TransportVehicle;
+  vehicle: Vehicle;
+  station?: { latitude: number; longitude: number };
 }
 
-export default function VehicleMarker({ vehicle }: VehicleMarkerProps) {
+export default function VehicleMarker({ vehicle, station }: VehicleMarkerProps) {
   const icon = createVehicleIcon(vehicle.type, vehicle.status);
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('ja-JP', {
+  const formatTime = (date: Date | string) => {
+    const dateObj = date instanceof Date ? date : new Date(date);
+    return dateObj.toLocaleTimeString('ja-JP', {
       hour: '2-digit',
       minute: '2-digit'
     });
@@ -80,9 +82,14 @@ export default function VehicleMarker({ vehicle }: VehicleMarkerProps) {
     }
   };
 
+  // 駅座標がない場合は表示しない
+  if (!station) {
+    return null;
+  }
+
   return (
     <Marker
-      position={[vehicle.currentPosition.latitude, vehicle.currentPosition.longitude]}
+      position={[station.latitude, station.longitude]}
       icon={icon}
     >
       <Popup>
@@ -93,26 +100,53 @@ export default function VehicleMarker({ vehicle }: VehicleMarkerProps) {
               <span className="text-gray-600">運行会社:</span>
               <span>{vehicle.operator}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">行き先:</span>
-              <span>{vehicle.destination}</span>
-            </div>
-            {vehicle.nextStop && (
+            {vehicle.trainNumber && (
               <div className="flex justify-between">
-                <span className="text-gray-600">次の停車駅:</span>
-                <span>{vehicle.nextStop}</span>
+                <span className="text-gray-600">列車番号:</span>
+                <span>{vehicle.trainNumber}</span>
+              </div>
+            )}
+            {vehicle.trainType && (
+              <div className="flex justify-between">
+                <span className="text-gray-600">列車種別:</span>
+                <span>{vehicle.trainType}</span>
+              </div>
+            )}
+            {vehicle.destination && (
+              <div className="flex justify-between">
+                <span className="text-gray-600">行き先:</span>
+                <span>{vehicle.destination}</span>
+              </div>
+            )}
+            {vehicle.currentStation && (
+              <div className="flex justify-between">
+                <span className="text-gray-600">現在位置:</span>
+                <span>{vehicle.currentStation}</span>
               </div>
             )}
             <div className="flex justify-between">
               <span className="text-gray-600">運行状況:</span>
               <span className={getStatusColor(vehicle.status)}>
                 {getStatusText(vehicle.status)}
+                {vehicle.isEstimated && ' (推定)'}
               </span>
             </div>
             {vehicle.delay > 0 && (
               <div className="flex justify-between">
                 <span className="text-gray-600">遅延時間:</span>
                 <span className="text-amber-600">{vehicle.delay}分</span>
+              </div>
+            )}
+            {vehicle.scheduledTime && (
+              <div className="flex justify-between">
+                <span className="text-gray-600">予定時刻:</span>
+                <span>{vehicle.scheduledTime}</span>
+              </div>
+            )}
+            {vehicle.carComposition && (
+              <div className="flex justify-between">
+                <span className="text-gray-600">編成両数:</span>
+                <span>{vehicle.carComposition}両</span>
               </div>
             )}
             <div className="flex justify-between">

@@ -1,39 +1,28 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import dynamic from 'next/dynamic';
 import { LatLngExpression } from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
 import { Station } from '../types/station';
 import { Vehicle, VehicleResponse } from '../types/vehicle';
-import VehicleMarker from './VehicleMarker';
 
-// Fix for default markers in React-Leaflet
-delete (L.Icon.Default.prototype as L.Icon.Default & { _getIconUrl?: () => string })._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-});
-
-// 駅用のアイコンを作成
-const stationIcon = L.divIcon({
-  html: `
-    <div style="
-      background-color: #3b82f6;
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      border: 2px solid white;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-    "></div>
-  `,
-  className: 'station-marker',
-  iconSize: [12, 12],
-  iconAnchor: [6, 6],
-  popupAnchor: [0, -6]
-});
+const MapContainer = dynamic(
+  () => import('react-leaflet').then((mod) => mod.MapContainer),
+  { ssr: false }
+);
+const TileLayer = dynamic(
+  () => import('react-leaflet').then((mod) => mod.TileLayer),
+  { ssr: false }
+);
+const Marker = dynamic(
+  () => import('react-leaflet').then((mod) => mod.Marker),
+  { ssr: false }
+);
+const Popup = dynamic(
+  () => import('react-leaflet').then((mod) => mod.Popup),
+  { ssr: false }
+);
+const VehicleMarker = dynamic(() => import('./VehicleMarker'), { ssr: false });
 
 interface MapProps {
   center?: LatLngExpression;
@@ -51,6 +40,8 @@ export default function Map({
   const [vehicleStats, setVehicleStats] = useState<{total: number, realTime: number, estimated: number}>({total: 0, realTime: 0, estimated: 0});
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [L, setL] = useState<typeof import('leaflet') | null>(null);
+  const [stationIcon, setStationIcon] = useState<import('leaflet').DivIcon | null>(null);
 
   // 駅データを取得
   const fetchStations = async () => {
@@ -108,6 +99,44 @@ export default function Map({
     return station ? station.location : undefined;
   };
 
+  // Leafletの初期化
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      import('leaflet').then((leaflet) => {
+        // CSS import is handled by the app
+
+        // Fix for default markers in React-Leaflet
+        delete (leaflet.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
+        leaflet.Icon.Default.mergeOptions({
+          iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+          iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+        });
+
+        // 駅用のアイコンを作成
+        const icon = leaflet.divIcon({
+          html: `
+            <div style="
+              background-color: #3b82f6;
+              width: 12px;
+              height: 12px;
+              border-radius: 50%;
+              border: 2px solid white;
+              box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            "></div>
+          `,
+          className: 'station-marker',
+          iconSize: [12, 12],
+          iconAnchor: [6, 6],
+          popupAnchor: [0, -6]
+        });
+
+        setL(leaflet);
+        setStationIcon(icon);
+      });
+    }
+  }, []);
+
   // 初回データ取得
   useEffect(() => {
     fetchStations();
@@ -119,6 +148,17 @@ export default function Map({
     const interval = setInterval(fetchVehicles, 30000); // 30秒ごとに更新
     return () => clearInterval(interval);
   }, []);
+
+  // Leafletが読み込まれるまでローディング表示
+  if (!L || !stationIcon) {
+    return (
+      <div className={className}>
+        <div className="flex items-center justify-center h-full">
+          <div className="text-gray-500">地図を読み込み中...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={className}>
@@ -154,7 +194,7 @@ export default function Map({
         />
 
         {/* API取得駅の表示 */}
-        {stations.map(station => (
+        {stationIcon && stations.map(station => (
           <Marker
             key={station.id}
             position={[station.location.latitude, station.location.longitude]}
@@ -167,10 +207,10 @@ export default function Map({
                   <div className="text-xs text-gray-500">{station.nameEn}</div>
                 )}
                 <div className="text-xs text-gray-600 mt-1">
-                  {station.operator.replace('odpt.Operator:', '')}
+                  {station.operator?.replace('odpt.Operator:', '')}
                 </div>
                 <div className="text-xs text-gray-500">
-                  {station.railway.replace('odpt.Railway:', '')}
+                  {station.railway?.replace('odpt.Railway:', '')}
                 </div>
                 {station.stationCode && (
                   <div className="text-xs font-mono bg-gray-100 px-1 rounded mt-1">

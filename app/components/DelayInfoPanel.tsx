@@ -37,6 +37,9 @@ export default function DelayInfoPanel({ className = "" }: DelayInfoPanelProps) 
       });
     } catch (error) {
       console.error('Failed to fetch data:', error);
+      // エラー時はダミーデータを表示
+      setVehicles([]);
+      setVehicleStats({ total: 0, realTime: 0, estimated: 0 });
     } finally {
       setIsLoading(false);
     }

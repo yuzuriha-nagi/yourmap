@@ -15,7 +15,7 @@ export default function Home() {
     <div className="min-h-screen bg-background">
       <header className="bg-white dark:bg-gray-900 shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white font-audiowide">
             YourMap - 交通インフラ位置追跡
           </h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">
@@ -29,7 +29,7 @@ export default function Home() {
           <div className="lg:col-span-3">
             <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border">
               <div className="p-4 border-b">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center font-audiowide">
                   🗺️ リアルタイムマップ
                   <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
                     LIVE

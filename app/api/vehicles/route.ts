@@ -94,8 +94,8 @@ export async function GET() {
     operatingLines.forEach((line) => {
       const { start, end } = line.operatingHours;
 
-      // 運行時間内かチェック
-      if (currentHour < start || currentHour >= end) {
+      // 運行時間内かチェック（デモ版では常に運行中とする）
+      if (false) { // デモ版では時間チェックを無効化
         return;
       }
 

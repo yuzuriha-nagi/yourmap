@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 export async function GET() {
-  const apiKey = process.env.NEXT_PUBLIC_ODPT_API_KEY;
+  const apiKey = process.env.NEXT_PUBLIC_ODPT_API_KEY || process.env.ODPT_API_KEY;
 
   if (!apiKey) {
     return NextResponse.json(
@@ -12,7 +12,7 @@ export async function GET() {
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
 
     const vehicles: Record<string, unknown>[] = [];
     const now = new Date();

@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import "leaflet/dist/leaflet.css";
+@import url('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
 
 :root {
   --background: #ffffff;

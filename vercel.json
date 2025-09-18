@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "app/api/**/*.ts": {
+      "maxDuration": 30
+    }
+  },
+  "env": {
+    "NEXT_PUBLIC_ODPT_API_KEY": "@next_public_odpt_api_key"
+  }
+}

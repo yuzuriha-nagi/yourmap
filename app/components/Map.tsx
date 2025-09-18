@@ -35,6 +35,7 @@ export default function Map({
   zoom = 12,
   className = "h-96 w-full"
 }: MapProps) {
+  const [mounted, setMounted] = useState(false);
   const [stations, setStations] = useState<Station[]>([]);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [vehicleStats, setVehicleStats] = useState<{total: number, realTime: number, estimated: number}>({total: 0, realTime: 0, estimated: 0});
@@ -99,9 +100,14 @@ export default function Map({
     return station ? station.location : undefined;
   };
 
+  // マウント状態を設定
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Leafletの初期化
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && mounted) {
       import('leaflet').then((leaflet) => {
         // CSS import is handled by the app
 
@@ -135,19 +141,26 @@ export default function Map({
         setStationIcon(icon);
       });
     }
-  }, []);
+  }, [mounted]);
 
   // 初回データ取得
   useEffect(() => {
-    fetchStations();
-    fetchVehicles();
-  }, []);
+    if (mounted) {
+      fetchStations();
+      fetchVehicles();
+    }
+  }, [mounted]);
 
   // 定期更新（車両データのみ）
   useEffect(() => {
     const interval = setInterval(fetchVehicles, 30000); // 30秒ごとに更新
     return () => clearInterval(interval);
   }, []);
+
+  // サーバーサイドでは何もレンダリングしない
+  if (!mounted) {
+    return null;
+  }
 
   // Leafletが読み込まれるまでローディング表示
   if (!L || !stationIcon) {
@@ -182,12 +195,13 @@ export default function Map({
         )}
       </div>
 
-      <MapContainer
-        center={center}
-        zoom={zoom}
-        style={{ height: 'calc(100% - 24px)', width: '100%' }}
-        scrollWheelZoom={true}
-      >
+      <div style={{ height: '400px', width: '100%' }}>
+        <MapContainer
+          center={center}
+          zoom={zoom}
+          style={{ height: '100%', width: '100%' }}
+          scrollWheelZoom={true}
+        >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -235,6 +249,7 @@ export default function Map({
         })}
 
       </MapContainer>
+      </div>
     </div>
   );
 }

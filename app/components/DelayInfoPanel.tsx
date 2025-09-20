@@ -74,9 +74,9 @@ export default function DelayInfoPanel({ className = "", lineId }: DelayInfoPane
   return (
     <div className={`space-y-6 ${className}`}>
       {/* 遅延情報 */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border">
-        <div className="p-4 border-b">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+      <div className="bg-black rounded-lg shadow-sm border max-w-full overflow-hidden">
+        <div className="p-4 border-b border-gray-600">
+          <h3 className="text-lg font-semibold text-white flex items-center">
             ⚠️ 遅延情報
             {delayedVehicles.length > 0 && (
               <span className="ml-2 bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded-full">
@@ -87,7 +87,7 @@ export default function DelayInfoPanel({ className = "", lineId }: DelayInfoPane
         </div>
         <div className="p-4">
           {delayedVehicles.length === 0 ? (
-            <div className="text-sm text-gray-600 dark:text-gray-300 text-center py-4">
+            <div className="text-sm text-gray-300 text-center py-4">
               🎉 現在、遅延は発生していません
             </div>
           ) : (
@@ -95,16 +95,16 @@ export default function DelayInfoPanel({ className = "", lineId }: DelayInfoPane
               {delayedVehicles.map(vehicle => (
                 <div
                   key={vehicle.id}
-                  className="border border-amber-200 rounded-lg p-3 bg-amber-50 dark:bg-amber-900/20"
+                  className="border border-amber-600 rounded-lg p-3 bg-amber-900/20 max-w-full overflow-hidden"
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-lg">{getDelayIcon(vehicle.type)}</span>
-                      <div>
-                        <div className="font-medium text-gray-900 dark:text-white">
+                  <div className="flex items-start justify-between min-w-0">
+                    <div className="flex items-center space-x-2 min-w-0 flex-1">
+                      <span className="text-lg flex-shrink-0">{getDelayIcon(vehicle.type)}</span>
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium text-white truncate">
                           {vehicle.line}
                         </div>
-                        <div className="text-sm text-gray-600 dark:text-gray-300">
+                        <div className="text-sm text-gray-300 truncate">
                           {vehicle.operator} → {vehicle.destination}
                         </div>
                         {vehicle.trainNumber && (

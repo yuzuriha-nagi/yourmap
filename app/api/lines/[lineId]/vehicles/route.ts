@@ -1,4 +1,5 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { nishitetsuService } from '../../../../services/nishitetsuDataService';
 
 export const maxDuration = 30;
 
@@ -15,10 +16,47 @@ function getTrainType(lineId: string, vehicleIndex: number, isRushHour: boolean)
 }
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { lineId: string } }
 ) {
   const { lineId } = params;
+
+  // 西鉄天神大牟田線の場合は新しいサービスを使用
+  if (lineId === 'nishitetsu_tenjin_omuta_line') {
+    try {
+      // 基本的な検証
+      if (!lineId || typeof lineId !== 'string') {
+        return NextResponse.json(
+          { error: 'Invalid line ID' },
+          { status: 400 }
+        );
+      }
+
+      // サービスが無効の場合はフォールバックデータを返す
+      if (!nishitetsuService.getStats().isEnabled) {
+        console.log('Nishitetsu service is disabled, using fallback data');
+        // 既存のシミュレーションロジックにフォールバック
+      } else {
+        try {
+          // 実際のデータを取得
+          const vehicleData = await nishitetsuService.fetchVehicleData(lineId);
+
+          return NextResponse.json({
+            ...vehicleData,
+            source: 'nishitetsu',
+            lineId,
+            lineName: '西鉄天神大牟田線'
+          });
+        } catch (serviceError) {
+          console.error('Nishitetsu service error:', serviceError);
+          // サービスエラーの場合は既存のシミュレーションにフォールバック
+        }
+      }
+    } catch (error) {
+      console.error('Nishitetsu integration error:', error);
+      // エラーの場合は既存のシミュレーションにフォールバック
+    }
+  }
 
   // 路線ごとの設定
   const lineConfigs: Record<string, {
@@ -29,6 +67,14 @@ export async function GET(
     headway: number;
     operatingHours: { start: number; end: number };
   }> = {
+    nishitetsu_tenjin_omuta_line: {
+      name: '西鉄天神大牟田線',
+      operator: '西日本鉄道',
+      type: 'train',
+      stations: ['西鉄福岡（天神）', '薬院', '西鉄平尾', '高宮', '大橋', '井尻', '春日原', '白水', '下大利', '都府楼前', '二日市', '朝倉街道', '桜台', '筑紫', '津古', '三国が丘', '三沢', '大保', '西鉄小郡', '端間', '味坂', '宮の陣', '櫛原', '西鉄久留米', '花畑', '試験場前', '津福', '安武', '大善寺', '三潴', '犬塚', '大溝', '八丁牟田', '蒲池', '矢加部', '塩塚', '西鉄銀水', '新栄町', '西鉄柳川', '徳益', '沖端', '西鉄中島', '江の浦', '開', '倉永', '東甘木', '西鉄渡瀬', '吉野', '銀水', '新大牟田', '大牟田'],
+      headway: 8,
+      operatingHours: { start: 5, end: 24 }
+    },
     tokaido_main_line_west: {
       name: 'JR東海道本線(西)',
       operator: 'JR-West',

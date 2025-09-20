@@ -41,6 +41,57 @@ export default function LinePage() {
   const [mapZoom, setMapZoom] = useState<number>(11);
   const [stationsData, setStationsData] = useState<any[]>([]);
   const [lineData, setLineData] = useState<LineData | null>(null);
+  const [stationFilter, setStationFilter] = useState<'all' | 'local' | 'express' | 'limited'>('all');
+
+  // 西鉄天神大牟田線の停車パターン定義
+  const getStationCategories = () => {
+    if (lineId !== 'nishitetsu_tenjin_omuta_line') {
+      // 他の路線では全駅普通停車として扱う
+      return {
+        local: lineData?.stations || [],
+        express: lineData?.stations || [],
+        limited: lineData?.stations || []
+      };
+    }
+
+    // 西鉄天神大牟田線の実際の停車パターン
+    const expressStations = [
+      '西鉄福岡（天神）', '薬院', '大橋', '春日原', '下大利', '西鉄二日市',
+      '朝倉街道', '筑紫', '三国が丘', '西鉄小郡', '宮の陣', '久留米',
+      '花畑', '大善寺', '新栄町', '西鉄柳川', '大牟田'
+    ];
+
+    const limitedExpressStations = [
+      '西鉄福岡（天神）', '薬院', '大橋', '春日原', '西鉄二日市',
+      '久留米', '花畑', '大善寺', '新栄町', '西鉄柳川', '大牟田'
+    ];
+
+    return {
+      local: lineData?.stations || [], // 普通は全駅停車
+      express: expressStations,
+      limited: limitedExpressStations
+    };
+  };
+
+  const stationCategories = getStationCategories();
+
+  // フィルタリングされた駅リスト
+  const getFilteredStations = () => {
+    if (!lineData) return [];
+
+    switch (stationFilter) {
+      case 'local':
+        return stationCategories.local;
+      case 'express':
+        return stationCategories.express;
+      case 'limited':
+        return stationCategories.limited;
+      default:
+        return lineData.stations;
+    }
+  };
+
+  const filteredStations = getFilteredStations();
 
   // APIから路線データと駅データを取得
   useEffect(() => {
@@ -153,7 +204,7 @@ export default function LinePage() {
 
       <main className="max-w-none mx-auto px-4 sm:px-6 lg:px-8 py-6" style={{ maxWidth: '960px' }}>
         {/* マップエリア */}
-        <div className="mb-12 bg-black rounded-lg shadow-sm border" style={{ width: '960px', margin: '0 auto 80px auto' }}>
+        <div className="mb-12 bg-black rounded-lg shadow-sm border max-w-full" style={{ width: '100%', maxWidth: '960px', margin: '0 auto 80px auto' }}>
           <div className="p-4 border-b border-black">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-white flex items-center font-audiowide">
@@ -167,48 +218,135 @@ export default function LinePage() {
               </div>
             </div>
           </div>
-          <div style={{ width: '960px', height: '560px', padding: '15px', margin: '0 auto' }}>
+          <div className="w-full max-w-full px-4 py-4 pb-16">
             <LineMap
               lineId={lineId}
               center={mapCenter}
               zoom={mapZoom}
-              className="rounded-lg"
-              style={{ width: '900px', height: '500px', margin: '0 auto' }}
+              className="rounded-lg w-full h-64 md:h-96"
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6" style={{ width: '960px', margin: '0 auto' }}>
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 max-w-full" style={{ width: '100%', maxWidth: '960px', margin: '0 auto' }}>
           {/* 駅一覧エリア */}
           <div className="lg:col-span-3">
 
             {/* 駅一覧 */}
             <div className="bg-black rounded-lg shadow-sm border">
               <div className="p-4 border-b border-black">
-                <h3 className="text-lg font-semibold text-white">
-                  🚉 停車駅一覧 ({lineData.stations.length}駅)
-                </h3>
+                <div className="flex flex-col space-y-3">
+                  <h3 className="text-lg font-semibold text-white">
+                    🚉 停車駅一覧 ({filteredStations.length}駅)
+                  </h3>
+
+                  {/* カテゴリフィルター */}
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => setStationFilter('all')}
+                      className={`px-3 py-1 text-xs rounded-full transition-colors ${
+                        stationFilter === 'all'
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      }`}
+                    >
+                      すべて ({lineData.stations.length})
+                    </button>
+                    <button
+                      onClick={() => setStationFilter('local')}
+                      className={`px-3 py-1 text-xs rounded-full transition-colors ${
+                        stationFilter === 'local'
+                          ? 'bg-green-500 text-white'
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      }`}
+                    >
+                      普通 ({stationCategories.local.length})
+                    </button>
+                    <button
+                      onClick={() => setStationFilter('express')}
+                      className={`px-3 py-1 text-xs rounded-full transition-colors ${
+                        stationFilter === 'express'
+                          ? 'bg-orange-500 text-white'
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      }`}
+                    >
+                      急行 ({stationCategories.express.length})
+                    </button>
+                    <button
+                      onClick={() => setStationFilter('limited')}
+                      className={`px-3 py-1 text-xs rounded-full transition-colors ${
+                        stationFilter === 'limited'
+                          ? 'bg-red-500 text-white'
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      }`}
+                    >
+                      特急 ({stationCategories.limited.length})
+                    </button>
+                  </div>
+                </div>
               </div>
               <div className="p-4">
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                  {lineData.stations.map((station, index) => (
-                    <button
-                      key={station}
-                      className="flex items-center p-4 bg-gray-800 border border-gray-600 rounded-lg cursor-pointer hover:bg-gray-700 hover:border-gray-500 active:bg-gray-600 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
-                      onClick={() => handleStationClick(station)}
-                    >
-                      <div
-                        className="w-4 h-4 rounded-full mr-3 flex-shrink-0"
-                        style={{ backgroundColor: lineData.color }}
-                      ></div>
-                      <div className="text-left min-w-0 flex-1">
-                        <div className="font-medium text-sm text-white truncate">{station}</div>
-                        <div className="text-xs text-gray-300">
-                          {index + 1}番目
+                {/* デスクトップ表示 */}
+                <div className="hidden md:block">
+                  <div className="grid grid-cols-3 lg:grid-cols-4 gap-3">
+                    {filteredStations.map((station, index) => {
+                      const originalIndex = lineData.stations.indexOf(station);
+                      return (
+                      <button
+                        key={station}
+                        className="flex items-center p-4 bg-gray-800 border border-gray-600 rounded-lg cursor-pointer hover:bg-gray-700 hover:border-gray-500 active:bg-gray-600 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
+                        onClick={() => handleStationClick(station)}
+                      >
+                        <div
+                          className="w-4 h-4 rounded-full mr-3 flex-shrink-0"
+                          style={{ backgroundColor: lineData.color }}
+                        ></div>
+                        <div className="text-left min-w-0 flex-1">
+                          <div className="font-medium text-sm text-white truncate">{station}</div>
+                          <div className="text-xs text-gray-300">
+                            {originalIndex + 1}番目
+                          </div>
                         </div>
-                      </div>
-                    </button>
-                  ))}
+                      </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* モバイル表示 - 3駅ずつ縦スクロール */}
+                <div className="block md:hidden">
+                  <div className="overflow-y-auto max-h-96">
+                    <div className="space-y-3">
+                      {Array.from({ length: Math.ceil(filteredStations.length / 3) }, (_, groupIndex) => (
+                        <div key={`group-${groupIndex}`} className="grid grid-cols-3 gap-2">
+                          {filteredStations.slice(groupIndex * 3, (groupIndex + 1) * 3).map((station, stationIndex) => {
+                            const originalIndex = lineData.stations.indexOf(station);
+                            return (
+                            <button
+                              key={station}
+                              className="flex flex-col items-center p-3 bg-gray-800 border border-gray-600 rounded-lg cursor-pointer hover:bg-gray-700 hover:border-gray-500 active:bg-gray-600 transition-all duration-200 shadow-sm text-center"
+                              onClick={() => handleStationClick(station)}
+                            >
+                              <div
+                                className="w-3 h-3 rounded-full mb-2 flex-shrink-0"
+                                style={{ backgroundColor: lineData.color }}
+                              ></div>
+                              <div className="min-w-0 flex-1">
+                                <div className="font-medium text-xs text-white truncate">{station}</div>
+                                <div className="text-xs text-gray-400">
+                                  {originalIndex + 1}
+                                </div>
+                              </div>
+                            </button>
+                            );
+                          })}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="text-xs text-gray-400 mt-2 text-center">
+                    ↑ 上下にスクロールして他の駅を表示 ↓
+                  </div>
                 </div>
               </div>
             </div>

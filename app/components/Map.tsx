@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { LatLngExpression } from 'leaflet';
 import { Station } from '../types/station';
 import { Vehicle, VehicleResponse } from '../types/vehicle';
+import { ValidatedVehicle } from '../utils/dataValidation';
 
 const MapContainer = dynamic(
   () => import('react-leaflet').then((mod) => mod.MapContainer),
@@ -290,13 +291,24 @@ export default function Map({
         {/* 車両の表示 */}
         {vehicles.map(vehicle => {
           const stationPosition = vehicle.currentStation ? getStationPosition(vehicle.currentStation) : undefined;
-          return (
+
+          // Vehicle型をValidatedVehicle型に変換
+          const validatedVehicle = {
+            ...vehicle,
+            destination: vehicle.destination || '不明',
+            lastUpdated: vehicle.lastUpdated instanceof Date ? vehicle.lastUpdated : new Date(vehicle.lastUpdated),
+            isEstimated: vehicle.isEstimated || false,
+            type: vehicle.type as 'train' | 'subway' | 'bus'
+          };
+
+          return stationPosition ? (
             <VehicleMarker
               key={vehicle.id}
-              vehicle={vehicle}
-              station={stationPosition}
+              vehicle={validatedVehicle}
+              position={[stationPosition.latitude, stationPosition.longitude]}
+              L={L}
             />
-          );
+          ) : null;
         })}
 
       </MapContainer>

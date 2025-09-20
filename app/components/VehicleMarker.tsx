@@ -1,157 +1,133 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { Marker, Popup } from 'react-leaflet';
-import L from 'leaflet';
-import { Vehicle } from '../types/vehicle';
+import { LatLngExpression, DivIcon } from 'leaflet';
+import { ValidatedVehicle } from '../utils/dataValidation';
 
-const createVehicleIcon = (type: string, status: string) => {
-  const getIconColor = () => {
-    switch (status) {
-      case 'on_time': return '#22c55e'; // green
-      case 'delayed': return '#f59e0b'; // amber
-      case 'cancelled': return '#ef4444'; // red
-      default: return '#6b7280'; // gray
+// 車両アイコン作成関数をコンポーネント外で定義
+const createVehicleIcon = (vehicle: ValidatedVehicle, L: any): DivIcon => {
+  // 遅延状況に基づいて色を決定
+  const getVehicleColor = (delay: number) => {
+    if (delay === 0) return '#10B981'; // 緑 - 定刻
+    if (delay <= 3) return '#F59E0B'; // 黄 - 軽微な遅延
+    if (delay <= 10) return '#EF4444'; // 赤 - 遅延
+    return '#7C2D12'; // 暗赤 - 大幅遅延
+  };
+
+  // 列車種別に基づいてアイコンを決定
+  const getTrainIcon = (trainType: string) => {
+    switch (trainType) {
+      case '特急': return '🚅';
+      case '急行': return '🚄';
+      case '普通': return '🚃';
+      default: return '🚆';
     }
   };
 
-  const getIconSymbol = () => {
-    switch (type) {
-      case 'train': return '🚆';
-      case 'subway': return '🚇';
-      case 'bus': return '🚌';
-      case 'tram': return '🚋';
-      default: return '🚍';
-    }
-  };
+  const color = getVehicleColor(vehicle.delay);
+  const trainIcon = getTrainIcon(vehicle.trainType || '普通');
 
   return L.divIcon({
     html: `
       <div style="
-        background-color: ${getIconColor()};
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
+        position: relative;
+        width: 24px;
+        height: 24px;
+        background-color: ${color};
         border: 2px solid white;
+        border-radius: 50%;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 16px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        font-size: 12px;
       ">
-        ${getIconSymbol()}
+        ${trainIcon}
+        ${vehicle.delay > 0 ? `
+          <div style="
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #EF4444;
+            color: white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+          ">
+            ${vehicle.delay}
+          </div>
+        ` : ''}
       </div>
     `,
     className: 'vehicle-marker',
-    iconSize: [32, 32],
-    iconAnchor: [16, 16],
-    popupAnchor: [0, -16]
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+    popupAnchor: [0, -12]
   });
 };
 
 interface VehicleMarkerProps {
-  vehicle: Vehicle;
-  station?: { latitude: number; longitude: number };
+  vehicle: ValidatedVehicle;
+  position: [number, number];
+  L?: typeof import('leaflet');
 }
 
-export default function VehicleMarker({ vehicle, station }: VehicleMarkerProps) {
-  const icon = createVehicleIcon(vehicle.type, vehicle.status);
+export default function VehicleMarker({ vehicle, position, L }: VehicleMarkerProps) {
+  const [vehicleIcon, setVehicleIcon] = useState<DivIcon | null>(null);
 
-  const formatTime = (date: Date | string) => {
-    const dateObj = date instanceof Date ? date : new Date(date);
-    return dateObj.toLocaleTimeString('ja-JP', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
+  useEffect(() => {
+    if (!L) return;
+    const icon = createVehicleIcon(vehicle, L);
+    setVehicleIcon(icon);
+  }, [L, vehicle.delay, vehicle.trainType]);
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'on_time': return '定刻運行';
-      case 'delayed': return '遅延';
-      case 'cancelled': return '運休';
-      default: return '不明';
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'on_time': return 'text-green-600';
-      case 'delayed': return 'text-amber-600';
-      case 'cancelled': return 'text-red-600';
-      default: return 'text-gray-600';
-    }
-  };
-
-  // 駅座標がない場合は表示しない
-  if (!station) {
+  if (!vehicleIcon || !L) {
     return null;
   }
 
   return (
-    <Marker
-      position={[station.latitude, station.longitude]}
-      icon={icon}
-    >
+    <Marker position={position as LatLngExpression} icon={vehicleIcon}>
       <Popup>
-        <div className="p-2 min-w-64">
-          <div className="font-semibold text-lg mb-2">{vehicle.line}</div>
-          <div className="space-y-1 text-sm">
-            <div className="flex justify-between">
-              <span className="text-gray-600">運行会社:</span>
-              <span>{vehicle.operator}</span>
+        <div className="text-sm">
+          <div className="font-semibold text-blue-600 mb-2">
+            {vehicle.trainType || '普通'} {vehicle.trainNumber || ''}
+          </div>
+
+          <div className="space-y-1">
+            <div>
+              <span className="font-medium">行き先:</span> {vehicle.destination}
             </div>
-            {vehicle.trainNumber && (
-              <div className="flex justify-between">
-                <span className="text-gray-600">列車番号:</span>
-                <span>{vehicle.trainNumber}</span>
-              </div>
-            )}
-            {vehicle.trainType && (
-              <div className="flex justify-between">
-                <span className="text-gray-600">列車種別:</span>
-                <span>{vehicle.trainType}</span>
-              </div>
-            )}
-            {vehicle.destination && (
-              <div className="flex justify-between">
-                <span className="text-gray-600">行き先:</span>
-                <span>{vehicle.destination}</span>
-              </div>
-            )}
+
             {vehicle.currentStation && (
-              <div className="flex justify-between">
-                <span className="text-gray-600">現在位置:</span>
-                <span>{vehicle.currentStation}</span>
+              <div>
+                <span className="font-medium">現在駅:</span> {vehicle.currentStation}
               </div>
             )}
-            <div className="flex justify-between">
-              <span className="text-gray-600">運行状況:</span>
-              <span className={getStatusColor(vehicle.status)}>
-                {getStatusText(vehicle.status)}
-                {vehicle.isEstimated && ' (推定)'}
+
+            <div>
+              <span className="font-medium">運行状況:</span>{' '}
+              <span className={`font-semibold ${
+                vehicle.delay === 0
+                  ? 'text-green-600'
+                  : vehicle.delay <= 3
+                    ? 'text-yellow-600'
+                    : 'text-red-600'
+              }`}>
+                {vehicle.delay === 0 ? '定刻' : `${vehicle.delay}分遅延`}
               </span>
             </div>
-            {vehicle.delay > 0 && (
-              <div className="flex justify-between">
-                <span className="text-gray-600">遅延時間:</span>
-                <span className="text-amber-600">{vehicle.delay}分</span>
-              </div>
-            )}
-            {vehicle.scheduledTime && (
-              <div className="flex justify-between">
-                <span className="text-gray-600">予定時刻:</span>
-                <span>{vehicle.scheduledTime}</span>
-              </div>
-            )}
-            {vehicle.carComposition && (
-              <div className="flex justify-between">
-                <span className="text-gray-600">編成両数:</span>
-                <span>{vehicle.carComposition}両</span>
-              </div>
-            )}
-            <div className="flex justify-between">
-              <span className="text-gray-600">最終更新:</span>
-              <span>{formatTime(vehicle.lastUpdated)}</span>
+
+            <div className="text-xs text-gray-500 mt-2">
+              最終更新: {new Date(vehicle.lastUpdated).toLocaleTimeString('ja-JP')}
+              {vehicle.isEstimated && (
+                <span className="ml-1 text-blue-500">(推定)</span>
+              )}
             </div>
           </div>
         </div>

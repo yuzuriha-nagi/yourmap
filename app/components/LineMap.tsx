@@ -5,6 +5,8 @@ import dynamic from 'next/dynamic';
 import { LatLngExpression } from 'leaflet';
 import { Station } from '../types/station';
 import { Vehicle, VehicleResponse } from '../types/vehicle';
+import { NISHITETSU_SEGMENTS, NISHITETSU_STATIONS, simulateVehiclePositions, VehiclePosition } from '../utils/railwayGeometry';
+import { ValidatedVehicle } from '../utils/dataValidation';
 
 const MapContainer = dynamic(
   () => import('react-leaflet').then((mod) => mod.MapContainer),
@@ -23,6 +25,10 @@ const Marker = dynamic(
 );
 const Popup = dynamic(
   () => import('react-leaflet').then((mod) => mod.Popup),
+  { ssr: false }
+);
+const Polyline = dynamic(
+  () => import('react-leaflet').then((mod) => mod.Polyline),
   { ssr: false }
 );
 const VehicleMarker = dynamic(() => import('./VehicleMarker'), {
@@ -57,6 +63,7 @@ export default function LineMap({
   const [L, setL] = useState<typeof import('leaflet') | null>(null);
   const [stationIcon, setStationIcon] = useState<import('leaflet').DivIcon | null>(null);
   const [currentTileProvider, setCurrentTileProvider] = useState(0);
+  const [vehiclePositions, setVehiclePositions] = useState<VehiclePosition[]>([]);
 
   // タイルプロバイダーの設定
   const tileProviders = [
@@ -131,6 +138,12 @@ export default function LineMap({
         realTime: vehicleData.realTime,
         estimated: vehicleData.estimated
       });
+
+      // 西鉄天神大牟田線の場合は車両位置をシミュレート
+      if (lineId === 'nishitetsu_tenjin_omuta_line') {
+        const positions = simulateVehiclePositions(NISHITETSU_SEGMENTS, vehiclesWithDates);
+        setVehiclePositions(positions);
+      }
     } catch (err) {
       setError('車両データの取得に失敗しました');
       console.error('Failed to fetch vehicle data:', err);
@@ -270,8 +283,60 @@ export default function LineMap({
               url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
             />
 
-            {/* 駅の表示 */}
-            {stations.map(station => (
+            {/* 西鉄天神大牟田線の路線表示 */}
+            {lineId === 'nishitetsu_tenjin_omuta_line' && (
+              <>
+                {/* 駅間の線路 */}
+                {NISHITETSU_SEGMENTS.map((segment, index) => (
+                  <Polyline
+                    key={`segment-${index}`}
+                    positions={segment.coordinates}
+                    pathOptions={{
+                      color: '#FF6B00', // 西鉄のオレンジ色
+                      weight: 4,
+                      opacity: 0.8
+                    }}
+                  />
+                ))}
+
+                {/* 西鉄の駅表示 */}
+                {NISHITETSU_STATIONS.map(station => (
+                  <Marker
+                    key={`nishitetsu-${station.index}`}
+                    position={[station.latitude, station.longitude]}
+                    icon={stationIcon}
+                  >
+                    <Popup>
+                      <div className="text-center">
+                        <div className="font-semibold text-sm">{station.name}</div>
+                        <div className="text-xs text-gray-600 mt-1">
+                          西日本鉄道
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {station.index + 1}番目の駅
+                        </div>
+                      </div>
+                    </Popup>
+                  </Marker>
+                ))}
+
+                {/* 車両位置表示 */}
+                {vehiclePositions.map(pos => {
+                  const vehicle = vehicles.find(v => v.id === pos.vehicleId);
+                  return vehicle ? (
+                    <VehicleMarker
+                      key={pos.vehicleId}
+                      vehicle={vehicle as ValidatedVehicle}
+                      position={[pos.latitude, pos.longitude]}
+                      L={L}
+                    />
+                  ) : null;
+                })}
+              </>
+            )}
+
+            {/* 他の路線の駅表示 */}
+            {lineId !== 'nishitetsu_tenjin_omuta_line' && stations.map(station => (
               <Marker
                 key={station.id}
                 position={[station.location.latitude, station.location.longitude]}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Vehicle, VehicleResponse } from '../types/vehicle';
 
 interface DelayInfoPanelProps {
@@ -12,6 +12,7 @@ export default function DelayInfoPanel({ className = "", lineId }: DelayInfoPane
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [vehicleStats, setVehicleStats] = useState<{total: number, realTime: number, estimated: number}>({total: 0, realTime: 0, estimated: 0});
   const [, setIsLoading] = useState<boolean>(true);
+  const [previousVehicles, setPreviousVehicles] = useState<Vehicle[]>([]);
 
   // データを取得する関数
   const fetchData = async () => {
@@ -31,6 +32,11 @@ export default function DelayInfoPanel({ className = "", lineId }: DelayInfoPane
         ...vehicle,
         lastUpdated: new Date(vehicle.lastUpdated)
       }));
+
+      // 前回のデータを保存
+      setPreviousVehicles(vehicles);
+
+      // 現在のデータを更新
       setVehicles(vehiclesWithDates);
       setVehicleStats({
         total: vehicleData.total,
@@ -58,8 +64,23 @@ export default function DelayInfoPanel({ className = "", lineId }: DelayInfoPane
     return () => clearInterval(interval);
   }, [lineId]);
 
+  // 現在遅延している車両のみを表示（以前のデータではなく最新のデータのみ）
   const delayedVehicles = vehicles.filter(vehicle => vehicle.delay > 0);
   const onTimeVehicles = vehicles.filter(vehicle => vehicle.delay === 0);
+
+  // 遅延が解消された車両をログに出力（デバッグ用）
+  React.useEffect(() => {
+    if (previousVehicles.length > 0) {
+      const resolvedDelays = previousVehicles.filter(prevVehicle => {
+        const currentVehicle = vehicles.find(v => v.id === prevVehicle.id);
+        return prevVehicle.delay > 0 && currentVehicle && currentVehicle.delay === 0;
+      });
+
+      if (resolvedDelays.length > 0) {
+        console.log(`遅延解消: ${resolvedDelays.length}件の車両の遅延が解消されました`);
+      }
+    }
+  }, [vehicles, previousVehicles]);
 
   const getDelayIcon = (type: string) => {
     switch (type) {

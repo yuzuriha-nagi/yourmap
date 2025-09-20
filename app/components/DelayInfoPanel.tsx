@@ -5,9 +5,10 @@ import { Vehicle, VehicleResponse } from '../types/vehicle';
 
 interface DelayInfoPanelProps {
   className?: string;
+  lineId?: string; // 路線固有の表示用
 }
 
-export default function DelayInfoPanel({ className = "" }: DelayInfoPanelProps) {
+export default function DelayInfoPanel({ className = "", lineId }: DelayInfoPanelProps) {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [vehicleStats, setVehicleStats] = useState<{total: number, realTime: number, estimated: number}>({total: 0, realTime: 0, estimated: 0});
   const [, setIsLoading] = useState<boolean>(true);
@@ -16,7 +17,8 @@ export default function DelayInfoPanel({ className = "" }: DelayInfoPanelProps) 
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/vehicles');
+      const apiUrl = lineId ? `/api/lines/${lineId}/vehicles` : '/api/vehicles';
+      const response = await fetch(apiUrl);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
@@ -52,9 +54,9 @@ export default function DelayInfoPanel({ className = "" }: DelayInfoPanelProps) 
 
   // 定期更新
   useEffect(() => {
-    const interval = setInterval(fetchData, 30000); // 30秒ごとに更新
+    const interval = setInterval(fetchData, 60000); // 1分ごとに更新
     return () => clearInterval(interval);
-  }, []);
+  }, [lineId]);
 
   const delayedVehicles = vehicles.filter(vehicle => vehicle.delay > 0);
   const onTimeVehicles = vehicles.filter(vehicle => vehicle.delay === 0);
@@ -178,7 +180,18 @@ export default function DelayInfoPanel({ className = "" }: DelayInfoPanelProps) 
               }分
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-300">
-              <strong>運行路線:</strong> JR鹿児島本線、JR博多南線、地下鉄空港線、地下鉄箱崎線、地下鉄七隈線
+              <strong>運行路線:</strong> JR東海道本線(西)、JR大阪環状線、JR山陽本線、JR北陸本線、JR山陰本線
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
+              <strong>データ種別:</strong> シミュレーション（時刻表ベース）
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
+              <strong>遅延要因:</strong> ラッシュ時混雑、天候、路線特性を考慮
+            </div>
+            <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                <strong>拡張機能:</strong> 時刻表ベース運行シミュレーション、路線別遅延傾向分析、ラッシュ時・天候要因考慮
+              </div>
             </div>
           </div>
         </div>

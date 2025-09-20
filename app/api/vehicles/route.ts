@@ -2,6 +2,18 @@ import { NextResponse } from 'next/server';
 
 export const maxDuration = 30;
 
+// 列車種別を取得するヘルパー関数
+function getTrainType(lineId: string, vehicleIndex: number, isRushHour: boolean): string {
+  if (lineId === 'osaka_loop_line') return '普通';
+  if (lineId === 'sanin_main_line') return vehicleIndex % 3 === 0 ? '特急' : '普通';
+  if (lineId === 'tokaido_main_line_west') {
+    if (isRushHour) return vehicleIndex % 2 === 0 ? '快速' : '普通';
+    return vehicleIndex % 3 === 0 ? '新快速' : vehicleIndex % 2 === 0 ? '快速' : '普通';
+  }
+  if (lineId === 'sanyo_main_line') return vehicleIndex % 2 === 0 ? '快速' : '普通';
+  return vehicleIndex % 3 === 0 ? '快速' : '普通';
+}
+
 export async function GET() {
   const apiKey = process.env.NEXT_PUBLIC_ODPT_API_KEY || process.env.ODPT_API_KEY;
 
@@ -22,52 +34,55 @@ export async function GET() {
     const currentMinute = now.getMinutes();
     const currentTimeMinutes = currentHour * 60 + currentMinute;
 
-    // 福岡地域の主要路線の運行パターンをシミュレート
+    // 西日本地域の主要路線の運行パターンをシミュレート
     const operatingLines = [
+      // 関西エリア
       {
-        id: 'kagoshima_main_line',
-        name: 'JR鹿児島本線',
-        operator: 'JR-Kyushu',
+        id: 'tokaido_main_line_west',
+        name: 'JR東海道本線(西)',
+        operator: 'JR-West',
         type: 'train' as const,
-        stations: ['博多', '吉塚', '箱崎', '香椎', '千早', '新宮中央', '福工大前', '九産大前', '篠栗', '城戸南蔵院前'],
-        headway: 8, // 8分間隔
-        operatingHours: { start: 5, end: 24 }
-      },
-      {
-        id: 'hakata_minami_line',
-        name: 'JR博多南線',
-        operator: 'JR-Kyushu',
-        type: 'train' as const,
-        stations: ['博多', '博多南'],
-        headway: 15,
-        operatingHours: { start: 6, end: 23 }
-      },
-      {
-        id: 'fukuoka_subway_airport',
-        name: '福岡市地下鉄空港線',
-        operator: 'FukuokaSubway',
-        type: 'subway' as const,
-        stations: ['姪浜', '室見', '藤崎', '西新', '唐人町', '大濠公園', '赤坂', '天神', '中洲川端', '祇園', '博多', '東比恵', '福岡空港'],
-        headway: 4,
-        operatingHours: { start: 5, end: 24 }
-      },
-      {
-        id: 'fukuoka_subway_hakozaki',
-        name: '福岡市地下鉄箱崎線',
-        operator: 'FukuokaSubway',
-        type: 'subway' as const,
-        stations: ['中洲川端', '呉服町', '千代県庁口', '馬出九大病院前', '箱崎九大前', '箱崎宮前', '貝塚'],
+        stations: ['大阪', '新大阪', '吹田', '茨木', '高槻', '山崎', '長岡京', '向日町', '京都'],
         headway: 6,
         operatingHours: { start: 5, end: 24 }
       },
       {
-        id: 'fukuoka_subway_nanakuma',
-        name: '福岡市地下鉄七隈線',
-        operator: 'FukuokaSubway',
-        type: 'subway' as const,
-        stations: ['橋本', '次郎丸', '賀茂', '野芥', '梅林', '福大前', '七隈', '金山', '茶山', '別府', '六本松', '桜坂', '薬院大通', '薬院', '渡辺通', '天神南', '博多'],
-        headway: 5,
+        id: 'osaka_loop_line',
+        name: 'JR大阪環状線',
+        operator: 'JR-West',
+        type: 'train' as const,
+        stations: ['大阪', '天満', '桜ノ宮', '京橋', '大阪城公園', '森ノ宮', '玉造', '鶴橋', '桃谷', '寺田町', '天王寺', '新今宮', '今宮', '芦原橋', '大正', '弁天町', '西九条', '野田', '福島', '大阪'],
+        headway: 4,
         operatingHours: { start: 5, end: 24 }
+      },
+      {
+        id: 'sanyo_main_line',
+        name: 'JR山陽本線',
+        operator: 'JR-West',
+        type: 'train' as const,
+        stations: ['神戸', '須磨', '舞子', '明石', '西明石', '加古川', '姫路', '相生', '岡山', '倉敷', '福山', '広島'],
+        headway: 8,
+        operatingHours: { start: 5, end: 24 }
+      },
+      // 北陸エリア
+      {
+        id: 'hokuriku_main_line',
+        name: 'JR北陸本線',
+        operator: 'JR-West',
+        type: 'train' as const,
+        stations: ['金沢', '津幡', '宇野気', '羽咋', '七尾', '小松', '加賀温泉', '芦原温泉', '福井'],
+        headway: 12,
+        operatingHours: { start: 5, end: 23 }
+      },
+      // 山陰エリア
+      {
+        id: 'sanin_main_line',
+        name: 'JR山陰本線',
+        operator: 'JR-West',
+        type: 'train' as const,
+        stations: ['京都', '亀岡', '園部', '福知山', '豊岡', '鳥取', '倉吉', '米子', '松江', '出雲市'],
+        headway: 15,
+        operatingHours: { start: 6, end: 22 }
       }
     ];
 
@@ -90,13 +105,17 @@ export async function GET() {
       }
     }
 
+    // 天候による遅延要素を追加
+    const weatherDelayFactor = Math.random() < 0.15 ? Math.floor(Math.random() * 3) + 1 : 0;
+    const isHoliday = now.getDay() === 0 || now.getDay() === 6; // 土日
+
     // 現在運行中の車両を生成（時刻表ベース）
     operatingLines.forEach((line) => {
       const { start, end } = line.operatingHours;
 
-      // 運行時間内かチェック（デモ版では常に運行中とする）
-      if (false) { // デモ版では時間チェックを無効化
-        return;
+      // 運行時間内かチェック
+      if (currentHour < start || currentHour >= end) {
+        return; // 運行時間外は車両なし
       }
 
       // 路線の遅延情報を取得
@@ -121,11 +140,19 @@ export async function GET() {
         const currentStation = line.stations[stationIndex];
         const destination = line.stations[totalStations - 1];
 
-        // ランダムな遅延要素を追加（ラッシュ時は遅延しやすい）
+        // より詳細な遅延要素を追加
         const isRushHour = (currentHour >= 7 && currentHour <= 9) || (currentHour >= 17 && currentHour <= 19);
-        const delayChance = isRushHour ? 0.3 : 0.1;
-        const randomDelay = Math.random() < delayChance ? Math.floor(Math.random() * 5) + 1 : 0;
-        const totalDelay = baseDelay + randomDelay;
+        const rushDelayMultiplier = isRushHour && !isHoliday ? 1.5 : 1.0;
+        const delayChance = isRushHour && !isHoliday ? 0.35 : 0.12;
+
+        // 路線特有の遅延傾向
+        const lineDelayFactor = line.id === 'osaka_loop_line' ? 1.2 : // 環状線は遅延しやすい
+                               line.id === 'sanin_main_line' ? 0.8 : // 山陰本線は比較的定時
+                               1.0;
+
+        const randomDelay = Math.random() < delayChance ?
+          Math.floor((Math.random() * 8 + 1) * lineDelayFactor * rushDelayMultiplier) : 0;
+        const totalDelay = Math.min(baseDelay + randomDelay + weatherDelayFactor, 20); // 最大20分
 
         vehicles.push({
           id: `${line.id}_up_${i}_${Date.now()}`,
@@ -133,13 +160,13 @@ export async function GET() {
           line: line.name,
           operator: line.operator,
           trainNumber: `${line.id.toUpperCase()}-${String(i + 1).padStart(3, '0')}`,
-          trainType: line.type === 'subway' ? '普通' : '快速',
+          trainType: getTrainType(line.id, i, isRushHour),
           currentStation: currentStation,
           destination: destination,
           delay: totalDelay,
           status: totalDelay > 0 ? 'delayed' : 'on_time',
           isEstimated: true,
-          carComposition: line.type === 'subway' ? 6 : 8,
+          carComposition: line.type === 'train' ? 8 : 6,
           lastUpdated: new Date()
         });
       }
@@ -153,9 +180,16 @@ export async function GET() {
         const destination = line.stations[0];
 
         const isRushHour = (currentHour >= 7 && currentHour <= 9) || (currentHour >= 17 && currentHour <= 19);
-        const delayChance = isRushHour ? 0.3 : 0.1;
-        const randomDelay = Math.random() < delayChance ? Math.floor(Math.random() * 5) + 1 : 0;
-        const totalDelay = baseDelay + randomDelay;
+        const rushDelayMultiplier = isRushHour && !isHoliday ? 1.5 : 1.0;
+        const delayChance = isRushHour && !isHoliday ? 0.35 : 0.12;
+
+        const lineDelayFactor = line.id === 'osaka_loop_line' ? 1.2 :
+                               line.id === 'sanin_main_line' ? 0.8 :
+                               1.0;
+
+        const randomDelay = Math.random() < delayChance ?
+          Math.floor((Math.random() * 8 + 1) * lineDelayFactor * rushDelayMultiplier) : 0;
+        const totalDelay = Math.min(baseDelay + randomDelay + weatherDelayFactor, 20);
 
         vehicles.push({
           id: `${line.id}_down_${i}_${Date.now()}`,
@@ -163,13 +197,13 @@ export async function GET() {
           line: line.name,
           operator: line.operator,
           trainNumber: `${line.id.toUpperCase()}-${String(i + vehiclesPerDirection + 1).padStart(3, '0')}`,
-          trainType: line.type === 'subway' ? '普通' : '快速',
+          trainType: getTrainType(line.id, i + vehiclesPerDirection, isRushHour),
           currentStation: currentStation,
           destination: destination,
           delay: totalDelay,
           status: totalDelay > 0 ? 'delayed' : 'on_time',
           isEstimated: true,
-          carComposition: line.type === 'subway' ? 6 : 8,
+          carComposition: line.type === 'train' ? 8 : 6,
           lastUpdated: new Date()
         });
       }

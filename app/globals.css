@@ -1,23 +1,15 @@
 @import "tailwindcss";
-@import url('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: #ffffff;
+  --color-foreground: #171717;
   --font-sans: var(--font-inter);
   --font-mono: var(--font-inter);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  --background: #0a0a0a;
+  --foreground: #ededed;
 }
 
 body {
@@ -31,18 +23,11 @@ body {
   font-weight: 400;
 }
 
-/* Leaflet map fixes */
+/* Leaflet map fixes - 安全なスタイル */
 .leaflet-container {
-  height: 100% !important;
-  width: 100% !important;
+  z-index: 1 !important;
 }
 
-.leaflet-tile {
-  max-width: none !important;
-  max-height: none !important;
-}
-
-.leaflet-tile-pane {
-  left: 0px !important;
-  top: 0px !important;
+.leaflet-control-container {
+  z-index: 2 !important;
 }

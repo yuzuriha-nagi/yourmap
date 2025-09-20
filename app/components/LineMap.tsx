@@ -30,17 +30,20 @@ const VehicleMarker = dynamic(() => import('./VehicleMarker'), {
   loading: () => null
 });
 
-interface MapProps {
+interface LineMapProps {
+  lineId: string;
   center?: LatLngExpression;
   zoom?: number;
   className?: string;
 }
 
-export default function Map({
-  center = [33.589783, 130.420591], // 博多駅の正確な座標（JR九州エリア）
+export default function LineMap({
+  lineId,
+  center = [33.5904, 130.4207],
   zoom = 11,
-  className = "h-96 w-full"
-}: MapProps) {
+  className = "h-48 w-full",
+  style
+}: LineMapProps & { style?: React.CSSProperties }) {
   const [mounted, setMounted] = useState(false);
   const [stations, setStations] = useState<Station[]>([]);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -62,11 +65,6 @@ export default function Map({
       name: 'CartoDB Positron',
       url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-    },
-    {
-      name: 'OpenStreetMap France',
-      url: 'https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png',
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://www.openstreetmap.fr/">OpenStreetMap France</a>'
     }
   ];
 
@@ -75,39 +73,54 @@ export default function Map({
     setCurrentTileProvider((prev) => (prev + 1) % tileProviders.length);
   };
 
-  // 駅データを取得
-  const fetchStations = async () => {
+  // 路線固有の駅データを取得
+  const fetchLineStations = async () => {
     try {
-      const response = await fetch('/api/stations');
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-        throw new Error(errorData.error || `API request failed: ${response.status}`);
+      // 路線情報を取得
+      const lineResponse = await fetch(`/api/lines/${lineId}`);
+      if (!lineResponse.ok) {
+        throw new Error(`Line API request failed: ${lineResponse.status}`);
       }
-      const stationData = await response.json();
-      setStations(stationData);
+      const lineData = await lineResponse.json();
+
+      // 全駅データを取得
+      const stationsResponse = await fetch('/api/stations');
+      if (!stationsResponse.ok) {
+        throw new Error(`Stations API request failed: ${stationsResponse.status}`);
+      }
+      const allStations = await stationsResponse.json();
+
+      // 路線に関連する駅のみフィルタ
+      const lineStations = allStations.filter((station: Station) => {
+        return lineData.stations.includes(station.name);
+      });
+
+      setStations(lineStations);
     } catch (err) {
       console.error('Failed to fetch station data:', err);
     }
   };
 
-  // 車両データを取得
-  const fetchVehicles = async () => {
+  // 路線固有の車両データを取得
+  const fetchLineVehicles = async () => {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await fetch('/api/vehicles');
+      const response = await fetch(`/api/lines/${lineId}/vehicles`);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
         throw new Error(errorData.error || `API request failed: ${response.status}`);
       }
 
-      const vehicleData: VehicleResponse = await response.json();
+      const vehicleData: VehicleResponse & { lineId: string; lineName: string } = await response.json();
+
       // lastUpdatedをDate型に変換
       const vehiclesWithDates = vehicleData.vehicles.map(vehicle => ({
         ...vehicle,
         lastUpdated: new Date(vehicle.lastUpdated)
       }));
+
       setVehicles(vehiclesWithDates);
       setVehicleStats({
         total: vehicleData.total,
@@ -134,14 +147,21 @@ export default function Map({
   // マウント状態を設定
   useEffect(() => {
     setMounted(true);
+    return () => {
+      setMounted(false);
+    };
   }, []);
 
   // Leafletの初期化
   useEffect(() => {
     if (typeof window !== 'undefined' && mounted) {
-      import('leaflet').then((leaflet) => {
-        // CSS import is handled by the app
+      // LeafletのCSSを動的に読み込み
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      document.head.appendChild(link);
 
+      import('leaflet').then((leaflet) => {
         // Fix for default markers in React-Leaflet
         delete (leaflet.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
         leaflet.Icon.Default.mergeOptions({
@@ -150,23 +170,21 @@ export default function Map({
           shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
         });
 
-        // 駅用のアイコンを作成
+        // 駅用のアイコンを作成（正方形、色#7882B2）
         const icon = leaflet.divIcon({
           html: `
             <div style="
-              background-color: #3b82f6;
-              width: 20px;
-              height: 20px;
-              border-radius: 50%;
-              border: 3px solid white;
-              box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-              cursor: pointer;
+              background-color: #7882B2;
+              width: 8px;
+              height: 8px;
+              border: 1px solid white;
+              box-shadow: 0 1px 2px rgba(0,0,0,0.3);
             "></div>
           `,
           className: 'station-marker',
-          iconSize: [20, 20],
-          iconAnchor: [10, 10],
-          popupAnchor: [0, -10]
+          iconSize: [8, 8],
+          iconAnchor: [4, 4],
+          popupAnchor: [0, -8]
         });
 
         setL(leaflet);
@@ -177,17 +195,19 @@ export default function Map({
 
   // 初回データ取得
   useEffect(() => {
-    if (mounted) {
-      fetchStations();
-      fetchVehicles();
+    if (mounted && lineId) {
+      fetchLineStations();
+      fetchLineVehicles();
     }
-  }, [mounted]);
+  }, [mounted, lineId]);
 
   // 定期更新（車両データのみ）
   useEffect(() => {
-    const interval = setInterval(fetchVehicles, 60000); // 1分ごとに更新
+    if (!lineId) return;
+
+    const interval = setInterval(fetchLineVehicles, 60000); // 1分ごとに更新
     return () => clearInterval(interval);
-  }, []);
+  }, [lineId]);
 
   // サーバーサイドでは何もレンダリングしない
   if (!mounted) {
@@ -205,14 +225,13 @@ export default function Map({
     );
   }
 
-
   return (
-    <div className={className}>
-      {/* ステータス表示とタイル切り替えボタン */}
+    <div className={className} style={style}>
+      {/* ステータス表示 */}
       <div className="mb-2 flex items-center justify-between text-xs text-gray-500">
         <div className="flex space-x-4">
           <span>駅: {stations.length}件</span>
-          <span>車両: {vehicleStats.total}台 (リアルタイム: {vehicleStats.realTime}, 推定: {vehicleStats.estimated})</span>
+          <span>車両: {vehicleStats.total}台 (推定: {vehicleStats.estimated})</span>
           {isLoading ? (
             <span className="inline-block w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></span>
           ) : error ? (
@@ -221,85 +240,62 @@ export default function Map({
             <span className="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
           )}
         </div>
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={switchTileProvider}
-            className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded border"
-            title={`現在: ${tileProviders[currentTileProvider].name}`}
-          >
-            地図切替
-          </button>
-          {error && (
-            <div className="text-red-500 text-xs">
-              {error}
-            </div>
-          )}
-        </div>
       </div>
 
-      <div style={{ height: '300px', width: '100%' }}>
-        <MapContainer
-          key="main-map"
-          center={center}
-          zoom={zoom}
-          style={{ height: '100%', width: '100%' }}
-          scrollWheelZoom={true}
-          maxBounds={[
-            [30.0, 128.0], // 南西角（九州南部）
-            [46.0, 146.0]  // 北東角（北海道東部）
-          ]}
-          maxZoom={18}
-          minZoom={8}
-        >
-        <TileLayer
-          key={currentTileProvider}
-          attribution={tileProviders[currentTileProvider].attribution}
-          url={tileProviders[currentTileProvider].url}
-          errorTileUrl="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjU2IiBoZWlnaHQ9IjI1NiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBmaWxsPSIjZjAiIGQ9Ik0wIDBoMjU2djI1NkgweiIvPjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5OTkiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjEyIiB4PSIxMjgiIHk9IjEzNSI+VGlsZSBFcnJvcjwvdGV4dD48L3N2Zz4="
-        />
+      {/* デバッグ情報 */}
+      <div className="mb-2 text-xs text-gray-600">
+        マップ準備状況: Leaflet={L ? '✓' : '✗'}, アイコン={stationIcon ? '✓' : '✗'}, 駅数={stations.length}
+      </div>
 
-        {/* API取得駅の表示 */}
-        {stationIcon && stations.map(station => (
-          <Marker
-            key={station.id}
-            position={[station.location.latitude, station.location.longitude]}
-            icon={stationIcon}
+      {/* マップ表示 */}
+      <div style={{ height: '100%', width: '100%', overflow: 'hidden', border: '1px solid #ccc' }}>
+        {L && stationIcon ? (
+          <MapContainer
+            key={`map-${lineId}-${mounted}`}
+            center={center}
+            zoom={zoom}
+            style={{ height: '100%', width: '100%' }}
+            scrollWheelZoom={true}
+            dragging={true}
+            zoomControl={true}
+            attributionControl={true}
           >
-            <Popup>
-              <div className="text-center">
-                <div className="font-semibold">{station.name}</div>
-                {station.nameEn && (
-                  <div className="text-xs text-gray-500">{station.nameEn}</div>
-                )}
-                <div className="text-xs text-gray-600 mt-1">
-                  {station.operator?.replace('odpt.Operator:', '')}
-                </div>
-                <div className="text-xs text-gray-500">
-                  {station.railway?.replace('odpt.Railway:', '')}
-                </div>
-                {station.stationCode && (
-                  <div className="text-xs font-mono bg-gray-100 px-1 rounded mt-1">
-                    {station.stationCode}
-                  </div>
-                )}
-              </div>
-            </Popup>
-          </Marker>
-        ))}
-
-        {/* 車両の表示 */}
-        {vehicles.map(vehicle => {
-          const stationPosition = vehicle.currentStation ? getStationPosition(vehicle.currentStation) : undefined;
-          return (
-            <VehicleMarker
-              key={vehicle.id}
-              vehicle={vehicle}
-              station={stationPosition}
+            <TileLayer
+              attribution='&copy; OpenStreetMap contributors'
+              url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
             />
-          );
-        })}
 
-      </MapContainer>
+            {/* 駅の表示 */}
+            {stations.map(station => (
+              <Marker
+                key={station.id}
+                position={[station.location.latitude, station.location.longitude]}
+                icon={stationIcon}
+              >
+                <Popup>
+                  <div className="text-center">
+                    <div className="font-semibold text-sm">{station.name}</div>
+                    {station.nameEn && (
+                      <div className="text-xs text-gray-500">{station.nameEn}</div>
+                    )}
+                    <div className="text-xs text-gray-600 mt-1">
+                      {station.operator?.replace('odpt.Operator:', '')}
+                    </div>
+                    {station.stationCode && (
+                      <div className="text-xs font-mono bg-gray-100 px-1 rounded mt-1">
+                        {station.stationCode}
+                      </div>
+                    )}
+                  </div>
+                </Popup>
+              </Marker>
+            ))}
+          </MapContainer>
+        ) : (
+          <div className="flex items-center justify-center h-full bg-gray-100">
+            <div className="text-gray-600">地図を初期化中...</div>
+          </div>
+        )}
       </div>
     </div>
   );

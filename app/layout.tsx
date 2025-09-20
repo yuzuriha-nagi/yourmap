@@ -14,7 +14,7 @@ const audiowide = Audiowide({
 });
 
 export const metadata: Metadata = {
-  title: "YourMap - 交通インフラ位置追跡",
+  title: "Railytics - 交通インフラ位置追跡",
   description: "リアルタイムで電車・バスの位置と遅延情報を表示",
 };
 

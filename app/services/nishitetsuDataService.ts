@@ -144,7 +144,7 @@ class NishitetsuDataService {
         type: sanitized.type || 'train' as const,
         position: sanitized.position
       } as ValidatedVehicle;
-    }).filter(v => v.id && v.line && v.operator && v.destination !== undefined);
+    }).filter((v: ValidatedVehicle) => v.id && v.line && v.operator && v.destination !== undefined);
   }
 
   async fetchVehicleData(lineId: string = 'nishitetsu_tenjin_omuta_line'): Promise<ValidatedVehicleResponse> {

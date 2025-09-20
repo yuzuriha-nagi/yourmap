@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Audiowide } from "next/font/google";
 import "./globals.css";
+import "leaflet/dist/leaflet.css";
 
 const inter = Inter({
   variable: "--font-inter",

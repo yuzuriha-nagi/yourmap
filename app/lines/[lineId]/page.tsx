@@ -185,22 +185,22 @@ export default function LinePage() {
               <div className="p-4">
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                   {lineData.stations.map((station, index) => (
-                    <div
+                    <button
                       key={station}
-                      className="flex items-center p-3 bg-black rounded-lg cursor-pointer hover:bg-gray-900 transition-colors"
+                      className="flex items-center p-4 bg-gray-800 border border-gray-600 rounded-lg cursor-pointer hover:bg-gray-700 hover:border-gray-500 active:bg-gray-600 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
                       onClick={() => handleStationClick(station)}
                     >
                       <div
-                        className="w-3 h-3 rounded-full mr-2"
+                        className="w-4 h-4 rounded-full mr-3 flex-shrink-0"
                         style={{ backgroundColor: lineData.color }}
                       ></div>
-                      <div>
-                        <div className="font-medium text-sm text-white">{station}</div>
-                        <div className="text-xs text-white">
+                      <div className="text-left min-w-0 flex-1">
+                        <div className="font-medium text-sm text-white truncate">{station}</div>
+                        <div className="text-xs text-gray-300">
                           {index + 1}番目
                         </div>
                       </div>
-                    </div>
+                    </button>
                   ))}
                 </div>
               </div>

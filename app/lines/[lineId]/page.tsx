@@ -38,6 +38,7 @@ export default function LinePage() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [mounted, setMounted] = useState(false);
   const [mapCenter, setMapCenter] = useState<[number, number]>([33.589783, 130.420591]);
+  const [mapZoom, setMapZoom] = useState<number>(11);
   const [stationsData, setStationsData] = useState<any[]>([]);
   const [lineData, setLineData] = useState<LineData | null>(null);
 
@@ -57,6 +58,10 @@ export default function LinePage() {
         if (lineResponse.ok) {
           const line = await lineResponse.json();
           setLineData(line);
+          // 初期ズームレベルを設定
+          if (line.bounds && line.bounds.zoom) {
+            setMapZoom(line.bounds.zoom);
+          }
         }
       } catch (error) {
         console.error('Failed to fetch data:', error);
@@ -81,6 +86,8 @@ export default function LinePage() {
     const coords = getStationCoordinates(stationName);
     if (coords) {
       setMapCenter(coords);
+      // ズームレベルを15に設定してより拡大表示
+      setMapZoom(15);
     }
   };
 
@@ -164,7 +171,7 @@ export default function LinePage() {
             <LineMap
               lineId={lineId}
               center={mapCenter}
-              zoom={lineData.bounds.zoom}
+              zoom={mapZoom}
               className="rounded-lg"
               style={{ width: '900px', height: '500px', margin: '0 auto' }}
             />

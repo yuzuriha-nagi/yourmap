@@ -30,6 +30,10 @@ const VehicleMarker = dynamic(() => import('./VehicleMarker'), {
   loading: () => null
 });
 
+const ChangeView = dynamic(() => import('./ChangeView'), {
+  ssr: false
+});
+
 interface LineMapProps {
   lineId: string;
   center?: LatLngExpression;
@@ -260,6 +264,7 @@ export default function LineMap({
             zoomControl={true}
             attributionControl={true}
           >
+            <ChangeView center={center} zoom={zoom} />
             <TileLayer
               attribution='&copy; OpenStreetMap contributors'
               url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'

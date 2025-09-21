@@ -286,30 +286,35 @@ export default function LinePage() {
                 </div>
               </div>
               <div className="p-4">
-                {/* デスクトップ表示 */}
+                {/* デスクトップ表示 - スクロール式 */}
                 <div className="hidden md:block">
-                  <div className="grid grid-cols-3 lg:grid-cols-4 gap-3">
-                    {filteredStations.map((station, index) => {
-                      const originalIndex = lineData.stations.indexOf(station);
-                      return (
-                      <button
-                        key={station}
-                        className="flex items-center p-4 bg-gray-800 border border-gray-600 rounded-lg cursor-pointer hover:bg-gray-700 hover:border-gray-500 active:bg-gray-600 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
-                        onClick={() => handleStationClick(station)}
-                      >
-                        <div
-                          className="w-4 h-4 rounded-full mr-3 flex-shrink-0"
-                          style={{ backgroundColor: lineData.color }}
-                        ></div>
-                        <div className="text-left min-w-0 flex-1">
-                          <div className="font-medium text-sm text-white truncate">{station}</div>
-                          <div className="text-xs text-gray-300">
-                            {originalIndex + 1}番目
+                  <div className="overflow-y-auto max-h-96">
+                    <div className="grid grid-cols-3 lg:grid-cols-4 gap-3">
+                      {filteredStations.map((station, index) => {
+                        const originalIndex = lineData.stations.indexOf(station);
+                        return (
+                        <button
+                          key={station}
+                          className="flex items-center p-4 bg-gray-800 border border-gray-600 rounded-lg cursor-pointer hover:bg-gray-700 hover:border-gray-500 active:bg-gray-600 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
+                          onClick={() => handleStationClick(station)}
+                        >
+                          <div
+                            className="w-4 h-4 rounded-full mr-3 flex-shrink-0"
+                            style={{ backgroundColor: lineData.color }}
+                          ></div>
+                          <div className="text-left min-w-0 flex-1">
+                            <div className="font-medium text-sm text-white truncate">{station}</div>
+                            <div className="text-xs text-gray-300">
+                              {originalIndex + 1}番目
+                            </div>
                           </div>
-                        </div>
-                      </button>
-                      );
-                    })}
+                        </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div className="text-xs text-gray-400 mt-2 text-center">
+                    ↑ 上下にスクロールして他の駅を表示 ↓
                   </div>
                 </div>
 

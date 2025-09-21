@@ -213,7 +213,7 @@ export default function Map({
       <div className="mb-2 flex items-center justify-between text-xs text-gray-500">
         <div className="flex space-x-4">
           <span>駅: {stations.length}件</span>
-          <span>車両: {vehicleStats.total}台 (リアルタイム: {vehicleStats.realTime}, 推定: {vehicleStats.estimated})</span>
+          <span>車両: {vehicleStats.total}台</span>
           {isLoading ? (
             <span className="inline-block w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></span>
           ) : error ? (

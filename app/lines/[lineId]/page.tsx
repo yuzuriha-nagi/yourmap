@@ -10,9 +10,6 @@ const LineMap = dynamic(() => import('../../components/LineMap'), {
   ssr: false
 });
 
-const DelayInfoPanel = dynamic(() => import('../../components/DelayInfoPanel'), {
-  ssr: false
-});
 
 // 路線データの型定義
 interface LineData {
@@ -208,14 +205,8 @@ export default function LinePage() {
           <div className="p-4 border-b border-black">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-white flex items-center font-audiowide">
-                🗺️ 路線図・リアルタイム位置
-                <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
-                  LIVE
-                </span>
+                路線図
               </h2>
-              <div className="text-sm text-white">
-                自動更新: 1分間隔
-              </div>
             </div>
           </div>
           <div className="w-full max-w-full px-4 py-4 pb-16">
@@ -237,7 +228,7 @@ export default function LinePage() {
               <div className="p-4 border-b border-black">
                 <div className="flex flex-col space-y-3">
                   <h3 className="text-lg font-semibold text-white">
-                    🚉 停車駅一覧 ({filteredStations.length}駅)
+                    停車駅一覧 ({filteredStations.length}駅)
                   </h3>
 
                   {/* カテゴリフィルター */}
@@ -359,13 +350,10 @@ export default function LinePage() {
 
           {/* サイドパネル */}
           <div className="space-y-6">
-            {/* 運行情報パネル */}
-            <DelayInfoPanel lineId={lineId} />
-
             {/* 路線情報 */}
             <div className="bg-black rounded-lg shadow-sm border">
               <div className="p-4 border-b border-black">
-                <h3 className="text-lg font-semibold text-white">📊 路線情報</h3>
+                <h3 className="text-lg font-semibold text-white">路線情報</h3>
               </div>
               <div className="p-4 space-y-3">
                 <div className="flex justify-between">

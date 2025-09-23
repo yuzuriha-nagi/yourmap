@@ -11,29 +11,96 @@ export async function GET() {
     // 博多駅（JR鹿児島本線・山陽本線）- 出典: Mapion 33.589783, 130.420591
     { id: 'jrkyushu_hakata', name: '博多', nameEn: 'Hakata', location: { latitude: 33.589783, longitude: 130.420591 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB01' },
 
-    // 鹿児島本線（博多～熊本方面）- 出典: 地図マピオン
-    { id: 'jrkyushu_takesinai', name: '竹下', nameEn: 'Takeshita', location: { latitude: 33.5685436, longitude: 130.4317327 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB02' },
-    { id: 'jrkyushu_sasahara', name: '笹原', nameEn: 'Sasahara', location: { latitude: 33.5625, longitude: 130.4514 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB03' },
-    { id: 'jrkyushu_minamifukuoka', name: '南福岡', nameEn: 'Minami-Fukuoka', location: { latitude: 33.5569, longitude: 130.4592 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB04' },
-    { id: 'jrkyushu_kasuga', name: '春日', nameEn: 'Kasuga', location: { latitude: 33.5346788, longitude: 130.4693079 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB05' },
-    { id: 'jrkyushu_onojo', name: '大野城', nameEn: 'Onojo', location: { latitude: 33.5254828, longitude: 130.4795961 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB06' },
-    { id: 'jrkyushu_mizujo', name: '水城', nameEn: 'Mizuki', location: { latitude: 33.5178228, longitude: 130.4901787 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB07' },
-    { id: 'jrkyushu_tofurominami', name: '都府楼南', nameEn: 'Tofuro-minami', location: { latitude: 33.503197, longitude: 130.5065304 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB08' },
-    { id: 'jrkyushu_futsukaichi', name: '二日市', nameEn: 'Futsukaichi', location: { latitude: 33.4950482, longitude: 130.5186518 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB09' },
+    // 鹿児島本線（門司港～博多～熊本～鹿児島）- 正確な座標データ（出典: 地図マピオン）
+    // 主要駅のみ正確な座標で追加
+    { id: 'jrkyushu_mojiko', name: '門司港', nameEn: 'Mojiko', location: { latitude: 33.94496885, longitude: 130.96141047 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JA01' },
+    { id: 'jrkyushu_kokura', name: '小倉', nameEn: 'Kokura', location: { latitude: 33.88712398, longitude: 130.8828608 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JA04' },
 
-    // 福北ゆたか線（博多～折尾）
-    { id: 'jrkyushu_yoshitsuka', name: '吉塚', nameEn: 'Yoshizuka', location: { latitude: 33.6114, longitude: 130.4292 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Fukuhoku-Yutaka', stationCode: 'JD01' },
-    { id: 'jrkyushu_hakozaki', name: '箱崎', nameEn: 'Hakozaki', location: { latitude: 33.6236, longitude: 130.4214 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Fukuhoku-Yutaka', stationCode: 'JD02' },
-    { id: 'jrkyushu_chihaya', name: '千早', nameEn: 'Chihaya', location: { latitude: 33.6397, longitude: 130.4347 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Fukuhoku-Yutaka', stationCode: 'JD03' },
-    { id: 'jrkyushu_kashiihama', name: '香椎', nameEn: 'Kashii', location: { latitude: 33.6542, longitude: 130.4428 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Fukuhoku-Yutaka', stationCode: 'JD04' },
-    { id: 'jrkyushu_kashiijingu', name: '香椎神宮', nameEn: 'Kashii-Jingu', location: { latitude: 33.6675, longitude: 130.4558 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Fukuhoku-Yutaka', stationCode: 'JD05' },
-    { id: 'jrkyushu_sue', name: '須恵', nameEn: 'Sue', location: { latitude: 33.6897, longitude: 130.5336 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Fukuhoku-Yutaka', stationCode: 'JD06' },
-    { id: 'jrkyushu_uchigazono', name: '宇美', nameEn: 'Umi', location: { latitude: 33.7114, longitude: 130.5614 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Fukuhoku-Yutaka', stationCode: 'JD07' },
+    // 鹿児島本線 門司港～博多間 全32駅
+    { id: 'jrkyushu_komorie', name: '小森江', nameEn: 'Komorie', location: { latitude: 33.9164, longitude: 130.9387 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JA02' },
+    { id: 'jrkyushu_moji', name: '門司', nameEn: 'Moji', location: { latitude: 33.9043, longitude: 130.9334 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JA03' },
+    { id: 'jrkyushu_nishikokura', name: '西小倉', nameEn: 'Nishi-Kokura', location: { latitude: 33.88854025, longitude: 130.87386717 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JA05' },
+    { id: 'jrkyushu_kyushukodaimae', name: '九州工大前', nameEn: 'Kyushu-Kodai-mae', location: { latitude: 33.90040493, longitude: 130.84006711 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JA06' },
+    { id: 'jrkyushu_tobata', name: '戸畑', nameEn: 'Tobata', location: { latitude: 33.89707993, longitude: 130.82029119 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JA07' },
+    { id: 'jrkyushu_edamitsu', name: '枝光', nameEn: 'Edamitsu', location: { latitude: 33.87942073, longitude: 130.81317573 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JA08' },
+    { id: 'jrkyushu_spaceworld', name: 'スペースワールド', nameEn: 'Space World', location: { latitude: 33.87154091, longitude: 130.80674313 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JA09' },
+    { id: 'jrkyushu_yahata', name: '八幡', nameEn: 'Yahata', location: { latitude: 33.86896878, longitude: 130.79529424 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JA10' },
+    { id: 'jrkyushu_kurosaki', name: '黒崎', nameEn: 'Kurosaki', location: { latitude: 33.86703236, longitude: 130.76666918 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JA11' },
+    { id: 'jrkyushu_jinnoharu', name: '陣原', nameEn: 'Jinno-haru', location: { latitude: 33.86816507, longitude: 130.7429907 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JA12' },
+    { id: 'jrkyushu_orio', name: '折尾', nameEn: 'Orio', location: { latitude: 33.86400666, longitude: 130.71241579 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JA13' },
+    { id: 'jrkyushu_mizumaki', name: '水巻', nameEn: 'Mizumaki', location: { latitude: 33.85260487, longitude: 130.69623987 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JA14' },
+    { id: 'jrkyushu_ongagawa', name: '遠賀川', nameEn: 'Ongagawa', location: { latitude: 33.84695788, longitude: 130.6733087 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JA15' },
+    { id: 'jrkyushu_ebitsu', name: '海老津', nameEn: 'Ebitsu', location: { latitude: 33.84014661, longitude: 130.62376059 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JA16' },
+    { id: 'jrkyushu_kyoikudaimae', name: '教育大前', nameEn: 'Kyoikudai-mae', location: { latitude: 33.80845245, longitude: 130.59175326 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JA17' },
+    { id: 'jrkyushu_akama', name: '赤間', nameEn: 'Akama', location: { latitude: 33.80826865, longitude: 130.56960527 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JA18' },
+    { id: 'jrkyushu_togo', name: '東郷', nameEn: 'Togo', location: { latitude: 33.79434448, longitude: 130.52865387 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JA19' },
+    { id: 'jrkyushu_higashifukuma', name: '東福間', nameEn: 'Higashi-Fukuma', location: { latitude: 33.7738021, longitude: 130.51060887 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JA20' },
+    { id: 'jrkyushu_fukuma', name: '福間', nameEn: 'Fukuma', location: { latitude: 33.76373611, longitude: 130.48717237 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JA21' },
+    { id: 'jrkyushu_chidori', name: '千鳥', nameEn: 'Chidori', location: { latitude: 33.74859874, longitude: 130.47605989 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JA22' },
+    { id: 'jrkyushu_koga', name: '古賀', nameEn: 'Koga', location: { latitude: 33.73235043, longitude: 130.46662229 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JA23' },
+    { id: 'jrkyushu_shishibu', name: 'ししぶ', nameEn: 'Shishibu', location: { latitude: 33.7217099, longitude: 130.45830383 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JA24' },
+    { id: 'jrkyushu_shinguchuo', name: '新宮中央', nameEn: 'Shingu-Chuo', location: { latitude: 33.711572, longitude: 130.44931332 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JA25' },
+    { id: 'jrkyushu_fukkodaimae', name: '福工大前', nameEn: 'Fukko-dai-mae', location: { latitude: 33.69837334, longitude: 130.44013951 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JA26' },
+    { id: 'jrkyushu_kyusandaimae', name: '九産大前', nameEn: 'Kyusan-dai-mae', location: { latitude: 33.67372339, longitude: 130.44120668 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JA27' },
 
-    // 筑肥線（博多～唐津）
-    { id: 'jrkyushu_meinohama', name: '姪浜', nameEn: 'Meinohama', location: { latitude: 33.5839, longitude: 130.3172 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Chikuhi', stationCode: 'JC01' },
-    { id: 'jrkyushu_kyudaigakuken', name: '九大学研都市', nameEn: 'Kyudai-Gakken-Toshi', location: { latitude: 33.5975, longitude: 130.2172 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Chikuhi', stationCode: 'JC02' },
-    { id: 'jrkyushu_imajuku', name: '今宿', nameEn: 'Imajuku', location: { latitude: 33.5892, longitude: 130.1836 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Chikuhi', stationCode: 'JC03' },
+    // 鹿児島本線として追加が必要な駅（福北ゆたか線と共通）
+    { id: 'jrkyushu_kashii_kagoshima', name: '香椎', nameEn: 'Kashii', location: { latitude: 33.65913072, longitude: 130.44372354 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JA28' },
+    { id: 'jrkyushu_chihaya_kagoshima', name: '千早', nameEn: 'Chihaya', location: { latitude: 33.64928729, longitude: 130.4404741 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JA29' },
+    { id: 'jrkyushu_hakozaki_kagoshima', name: '箱崎', nameEn: 'Hakozaki', location: { latitude: 33.61816281, longitude: 130.42692067 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JA30' },
+    { id: 'jrkyushu_yoshizuka_kagoshima', name: '吉塚', nameEn: 'Yoshizuka', location: { latitude: 33.60703633, longitude: 130.42377675 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JA31' },
+
+    // 博多南方面の駅
+    { id: 'jrkyushu_takeshita', name: '竹下', nameEn: 'Takeshita', location: { latitude: 33.5685, longitude: 130.4317 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB02' },
+    { id: 'jrkyushu_sasahara', name: '笹原', nameEn: 'Sasahara', location: { latitude: 33.5536, longitude: 130.4486 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB03' },
+    { id: 'jrkyushu_minamifukuoka', name: '南福岡', nameEn: 'Minami-Fukuoka', location: { latitude: 33.5424, longitude: 130.4593 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB04' },
+
+    // 春日から荒尾までの鹿児島本線の駅
+    { id: 'jrkyushu_kasuga', name: '春日', nameEn: 'Kasuga', location: { latitude: 33.5353481, longitude: 130.46855792 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB05' },
+    { id: 'jrkyushu_onojo', name: '大野城', nameEn: 'Onojo', location: { latitude: 33.52548284, longitude: 130.47959609 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB06' },
+    { id: 'jrkyushu_mizuki', name: '水城', nameEn: 'Mizuki', location: { latitude: 33.51782282, longitude: 130.49017874 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB07' },
+    { id: 'jrkyushu_tofurominami', name: '都府楼南', nameEn: 'Tofuro-minami', location: { latitude: 33.503147222222225, longitude: 130.50674444444445 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB08' },
+    { id: 'jrkyushu_futsukaichi', name: '二日市', nameEn: 'Futsukaichi', location: { latitude: 33.4950778, longitude: 130.5185972 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB09' },
+    { id: 'jrkyushu_tenpaizan', name: '天拝山', nameEn: 'Tenpaizan', location: { latitude: 33.48186944444445, longitude: 130.53033333333335 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB10' },
+    { id: 'jrkyushu_harada', name: '原田', nameEn: 'Harada', location: { latitude: 33.45111, longitude: 130.5394 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB11' },
+    { id: 'jrkyushu_keyakidai', name: 'けやき台', nameEn: 'Keyakidai', location: { latitude: 33.4343944, longitude: 130.5333639 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB12' },
+    { id: 'jrkyushu_kiyama', name: '基山', nameEn: 'Kiyama', location: { latitude: 33.42093611111111, longitude: 130.5322027777778 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB13' },
+    { id: 'jrkyushu_yayoigaoka', name: '弥生が丘', nameEn: 'Yayoigaoka', location: { latitude: 33.4021778, longitude: 130.5283306 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB14' },
+    { id: 'jrkyushu_tashiro', name: '田代', nameEn: 'Tashiro', location: { latitude: 33.384008333333334, longitude: 130.52449722222224 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB15' },
+    { id: 'jrkyushu_tosu', name: '鳥栖', nameEn: 'Tosu', location: { latitude: 33.37383147, longitude: 130.51934385 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB16' },
+    { id: 'jrkyushu_hizenasahi', name: '肥前旭', nameEn: 'Hizen-Asahi', location: { latitude: 33.350236111111, longitude: 130.49598055555555 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB17' },
+    { id: 'jrkyushu_kurume', name: '久留米', nameEn: 'Kurume', location: { latitude: 33.32042615, longitude: 130.50158298 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB18' },
+    { id: 'jrkyushu_araki', name: '荒木', nameEn: 'Araki', location: { latitude: 33.2761028, longitude: 130.5024944 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB19' },
+    { id: 'jrkyushu_nishimuta', name: '西牟田', nameEn: 'Nishimuta', location: { latitude: 33.2465694, longitude: 130.5009667 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB20' },
+    { id: 'jrkyushu_hainuzuka', name: '羽犬塚', nameEn: 'Hainuzuka', location: { latitude: 33.21035555555556, longitude: 130.4980861111111 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB21' },
+    { id: 'jrkyushu_chikugofunagoya', name: '筑後船小屋', nameEn: 'Chikugo-Funagoya', location: { latitude: 33.177917, longitude: 130.492389 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB22' },
+    { id: 'jrkyushu_setaka', name: '瀬高', nameEn: 'Setaka', location: { latitude: 33.1569611, longitude: 130.485139 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB23' },
+    { id: 'jrkyushu_minamisetaka', name: '南瀬高', nameEn: 'Minami-Setaka', location: { latitude: 33.133694, longitude: 130.471178 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB24' },
+    { id: 'jrkyushu_wataze', name: '渡瀬', nameEn: 'Wataze', location: { latitude: 33.099889, longitude: 130.459778 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB25' },
+    { id: 'jrkyushu_yoshino', name: '吉野', nameEn: 'Yoshino', location: { latitude: 33.0758167, longitude: 130.4664361 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB26' },
+    { id: 'jrkyushu_ginsui', name: '銀水', nameEn: 'Ginsui', location: { latitude: 33.054861, longitude: 130.461028 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB27' },
+    { id: 'jrkyushu_omuta', name: '大牟田', nameEn: 'Omuta', location: { latitude: 33.02959438, longitude: 130.44364307 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB28' },
+    { id: 'jrkyushu_arao', name: '荒尾', nameEn: 'Arao', location: { latitude: 32.99430383, longitude: 130.43421704 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB29' },
+
+    // 熊本方面の主要駅（正確な座標）
+    { id: 'jrkyushu_kumamoto', name: '熊本', nameEn: 'Kumamoto', location: { latitude: 32.79010398, longitude: 130.6888273 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JB35' },
+
+    // 鹿児島方面の主要駅（正確な座標）
+    { id: 'jrkyushu_kagoshima_chuo', name: '鹿児島中央', nameEn: 'Kagoshima-Chuo', location: { latitude: 31.58367891, longitude: 130.54180976 }, operator: 'odpt.Operator:JR-Kyushu', railway: 'odpt.Railway:JR-Kyushu.Kagoshima', stationCode: 'JC12' },
+
+    // 北九州モノレール（小倉～企救丘）
+    { id: 'kitakyushu_monorail_kokura', name: '小倉駅', nameEn: 'Kokura Station', location: { latitude: 33.88655600, longitude: 130.88208300 }, operator: 'odpt.Operator:KitakyushuMonorail', railway: 'odpt.Railway:KitakyushuMonorail', stationCode: 'M01' },
+    { id: 'kitakyushu_monorail_heiwadori', name: '平和通', nameEn: 'Heiwa-dori', location: { latitude: 33.88311100, longitude: 130.88122200 }, operator: 'odpt.Operator:KitakyushuMonorail', railway: 'odpt.Railway:KitakyushuMonorail', stationCode: 'M02' },
+    { id: 'kitakyushu_monorail_tanga', name: '旦過', nameEn: 'Tanga', location: { latitude: 33.88063900, longitude: 130.88019400 }, operator: 'odpt.Operator:KitakyushuMonorail', railway: 'odpt.Railway:KitakyushuMonorail', stationCode: 'M03' },
+    { id: 'kitakyushu_monorail_kawaraguchi_mihagino', name: '香春口三萩野', nameEn: 'Kawaraguchi-mihagino', location: { latitude: 33.87319444, longitude: 130.88061111 }, operator: 'odpt.Operator:KitakyushuMonorail', railway: 'odpt.Railway:KitakyushuMonorail', stationCode: 'M04' },
+    { id: 'kitakyushu_monorail_katano', name: '片野', nameEn: 'Katano', location: { latitude: 33.86547222, longitude: 130.88005556 }, operator: 'odpt.Operator:KitakyushuMonorail', railway: 'odpt.Railway:KitakyushuMonorail', stationCode: 'M05' },
+    { id: 'kitakyushu_monorail_jono', name: '城野', nameEn: 'Jono', location: { latitude: 33.85830600, longitude: 130.87961100 }, operator: 'odpt.Operator:KitakyushuMonorail', railway: 'odpt.Railway:KitakyushuMonorail', stationCode: 'M06' },
+    { id: 'kitakyushu_monorail_kitagata', name: '北方', nameEn: 'Kitagata', location: { latitude: 33.84911111, longitude: 130.87805556 }, operator: 'odpt.Operator:KitakyushuMonorail', railway: 'odpt.Railway:KitakyushuMonorail', stationCode: 'M07' },
+    { id: 'kitakyushu_monorail_keibajomae', name: '競馬場前', nameEn: 'Keibajo-mae', location: { latitude: 33.84294444, longitude: 130.87658333 }, operator: 'odpt.Operator:KitakyushuMonorail', railway: 'odpt.Railway:KitakyushuMonorail', stationCode: 'M08' },
+    { id: 'kitakyushu_monorail_moritsune', name: '守恒', nameEn: 'Moritsune', location: { latitude: 33.83658300, longitude: 130.87283300 }, operator: 'odpt.Operator:KitakyushuMonorail', railway: 'odpt.Railway:KitakyushuMonorail', stationCode: 'M09' },
+    { id: 'kitakyushu_monorail_tokuryoku_kodanmae', name: '徳力公団前', nameEn: 'Tokuryoku-kodan-mae', location: { latitude: 33.83041700, longitude: 130.86752800 }, operator: 'odpt.Operator:KitakyushuMonorail', railway: 'odpt.Railway:KitakyushuMonorail', stationCode: 'M10' },
+    { id: 'kitakyushu_monorail_tokuryoku_arashiyamaguchi', name: '徳力嵐山口', nameEn: 'Tokuryoku-arashiyama-guchi', location: { latitude: 33.82477800, longitude: 130.86375000 }, operator: 'odpt.Operator:KitakyushuMonorail', railway: 'odpt.Railway:KitakyushuMonorail', stationCode: 'M11' },
+    { id: 'kitakyushu_monorail_shii', name: '志井', nameEn: 'Shii', location: { latitude: 33.82258333, longitude: 130.87130556 }, operator: 'odpt.Operator:KitakyushuMonorail', railway: 'odpt.Railway:KitakyushuMonorail', stationCode: 'M12' },
+    { id: 'kitakyushu_monorail_kikugaoka', name: '企救丘', nameEn: 'Kikugaoka', location: { latitude: 33.81963889, longitude: 130.87766667 }, operator: 'odpt.Operator:KitakyushuMonorail', railway: 'odpt.Railway:KitakyushuMonorail', stationCode: 'M13' },
 
     // 西鉄天神大牟田線（全50駅 - 正確な座標で順次追加）
     { id: 'nishitetsu_fukuoka_tenjin', name: '西鉄福岡（天神）', nameEn: 'Nishitetsu-Fukuoka (Tenjin)', location: { latitude: 33.587777, longitude: 130.400698 }, operator: 'odpt.Operator:Nishitetsu', railway: 'odpt.Railway:Nishitetsu.TenjinOmuta', stationCode: 'T01' },

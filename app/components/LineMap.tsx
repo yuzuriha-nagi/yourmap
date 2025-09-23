@@ -244,7 +244,7 @@ export default function LineMap({
 
   return (
     <div className={className} style={style}>
-      {/* ステータス表示 */}
+      {/* ステータス表示と切り替えボタン */}
       <div className="mb-2 flex items-center justify-between text-xs text-gray-500">
         <div className="flex space-x-4">
           <span>駅: {stations.length}件</span>
@@ -256,6 +256,8 @@ export default function LineMap({
           ) : (
             <span className="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
           )}
+        </div>
+        <div className="flex items-center space-x-2">
         </div>
       </div>
 
@@ -335,31 +337,70 @@ export default function LineMap({
               </>
             )}
 
-            {/* 他の路線の駅表示 */}
-            {lineId !== 'nishitetsu_tenjin_omuta_line' && stations.map(station => (
-              <Marker
-                key={station.id}
-                position={[station.location.latitude, station.location.longitude]}
-                icon={stationIcon}
-              >
-                <Popup>
-                  <div className="text-center">
-                    <div className="font-semibold text-sm">{station.name}</div>
-                    {station.nameEn && (
-                      <div className="text-xs text-gray-500">{station.nameEn}</div>
-                    )}
-                    <div className="text-xs text-gray-600 mt-1">
-                      {station.operator?.replace('odpt.Operator:', '')}
-                    </div>
-                    {station.stationCode && (
-                      <div className="text-xs font-mono bg-gray-100 px-1 rounded mt-1">
-                        {station.stationCode}
+            {/* 他の路線の駅表示と路線図 */}
+            {lineId !== 'nishitetsu_tenjin_omuta_line' && (
+              <>
+                {/* 駅間の線を描画 */}
+                {stations.length > 1 && lineId === 'kagoshima_main_line' && (
+                  <>
+                    {/* 鹿児島本線は駅コード順でソートしてから線を引く */}
+                    {(() => {
+                      const sortedStations = [...stations].sort((a, b) => {
+                        const codeA = a.stationCode || '';
+                        const codeB = b.stationCode || '';
+                        return codeA.localeCompare(codeB);
+                      });
+                      return (
+                        <Polyline
+                          positions={sortedStations.map(station => [station.location.latitude, station.location.longitude])}
+                          pathOptions={{
+                            color: '#FF6600',
+                            weight: 4,
+                            opacity: 0.8
+                          }}
+                        />
+                      );
+                    })()}
+                  </>
+                )}
+                {stations.length > 1 && lineId !== 'kagoshima_main_line' && (
+                  <Polyline
+                    positions={stations.map(station => [station.location.latitude, station.location.longitude])}
+                    pathOptions={{
+                      color: lineId === 'kitakyushu_monorail' ? '#0066CC' : '#FF6600',
+                      weight: 4,
+                      opacity: 0.8
+                    }}
+                  />
+                )}
+
+                {/* 駅マーカー */}
+                {stations.map(station => (
+                  <Marker
+                    key={station.id}
+                    position={[station.location.latitude, station.location.longitude]}
+                    icon={stationIcon}
+                  >
+                    <Popup>
+                      <div className="text-center">
+                        <div className="font-semibold text-sm">{station.name}</div>
+                        {station.nameEn && (
+                          <div className="text-xs text-gray-500">{station.nameEn}</div>
+                        )}
+                        <div className="text-xs text-gray-600 mt-1">
+                          {station.operator?.replace('odpt.Operator:', '')}
+                        </div>
+                        {station.stationCode && (
+                          <div className="text-xs font-mono bg-gray-100 px-1 rounded mt-1">
+                            {station.stationCode}
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                </Popup>
-              </Marker>
-            ))}
+                    </Popup>
+                  </Marker>
+                ))}
+              </>
+            )}
           </MapContainer>
         ) : (
           <div className="flex items-center justify-center h-full bg-gray-100">
